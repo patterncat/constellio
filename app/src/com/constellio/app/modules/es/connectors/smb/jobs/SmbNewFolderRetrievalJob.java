@@ -41,7 +41,7 @@ public class SmbNewFolderRetrievalJob extends SmbConnectorJob {
 				if (parentId == null && jobParams.getParentUrl() != null) {
 					ConnectorSmbFolder parentFolder = jobParams.getSmbRecordService().getFolder(jobParams.getParentUrl());
 					parentId = SmbRecordService.getSafeId(parentFolder);
-					if (parentId == null && jobParams.getParentUrl() != null) {
+					if (parentId == null) {
 						//The cache should be empty too
 						jobParams.getConnector().getContext().delete(jobParams.getParentUrl());
 					}
