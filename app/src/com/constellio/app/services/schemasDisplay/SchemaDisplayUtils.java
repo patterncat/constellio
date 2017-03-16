@@ -1,43 +1,29 @@
 package com.constellio.app.services.schemasDisplay;
 
-import static com.constellio.model.entities.schemas.MetadataValueType.BOOLEAN;
-import static com.constellio.model.entities.schemas.MetadataValueType.CONTENT;
-import static com.constellio.model.entities.schemas.MetadataValueType.DATE;
-import static com.constellio.model.entities.schemas.MetadataValueType.DATE_TIME;
-import static com.constellio.model.entities.schemas.MetadataValueType.ENUM;
-import static com.constellio.model.entities.schemas.MetadataValueType.INTEGER;
-import static com.constellio.model.entities.schemas.MetadataValueType.NUMBER;
-import static com.constellio.model.entities.schemas.MetadataValueType.REFERENCE;
-import static com.constellio.model.entities.schemas.MetadataValueType.STRING;
-import static com.constellio.model.entities.schemas.MetadataValueType.STRUCTURE;
-import static com.constellio.model.entities.schemas.MetadataValueType.TEXT;
-import static java.util.Arrays.asList;
+import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
+import com.constellio.app.modules.rm.wrappers.structures.CommentFactory;
+import com.constellio.model.entities.records.wrappers.Collection;
+import com.constellio.model.entities.records.wrappers.Group;
+import com.constellio.model.entities.records.wrappers.User;
+import com.constellio.model.entities.schemas.*;
+import com.constellio.model.services.contents.ContentFactory;
+import com.constellio.model.services.schemas.MetadataList;
+import com.constellio.model.services.schemas.MetadataListFilter;
+import com.constellio.model.services.schemas.SchemaUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
-import com.constellio.app.modules.rm.wrappers.structures.CommentFactory;
-import com.constellio.model.entities.records.wrappers.Collection;
-import com.constellio.model.entities.records.wrappers.Group;
-import com.constellio.model.entities.records.wrappers.User;
-import com.constellio.model.entities.schemas.Metadata;
-import com.constellio.model.entities.schemas.MetadataSchema;
-import com.constellio.model.entities.schemas.MetadataSchemaTypes;
-import com.constellio.model.entities.schemas.MetadataValueType;
-import com.constellio.model.entities.schemas.Schemas;
-import com.constellio.model.services.contents.ContentFactory;
-import com.constellio.model.services.schemas.MetadataList;
-import com.constellio.model.services.schemas.MetadataListFilter;
-import com.constellio.model.services.schemas.SchemaUtils;
+import static com.constellio.model.entities.schemas.MetadataValueType.*;
+import static java.util.Arrays.asList;
 
 public class SchemaDisplayUtils {
 
 	public static MetadataList getRequiredMetadatasInSchemaForm(MetadataSchema schema) {
 		return getAvailableMetadatasInSchemaForm(schema).onlyEssentialMetadatasAndCodeTitle().onlyManuals()
-				.onlyNonSystemReserved();
+				.onlyNonSystemReserved().onlyEnabled();
 	}
 
 	public static MetadataList getAvailableMetadatasInSchemaForm(MetadataSchema schema) {
@@ -62,7 +48,7 @@ public class SchemaDisplayUtils {
 			}
 		};
 
-		return schema.getMetadatas().onlyManuals().onlyEnabled().only(filter).sortedUsing(new FormMetadatasComparator());
+		return schema.getMetadatas().onlyManuals().only(filter).sortedUsing(new FormMetadatasComparator());
 	}
 
 	private static class FormMetadatasComparator implements Comparator<Metadata> {

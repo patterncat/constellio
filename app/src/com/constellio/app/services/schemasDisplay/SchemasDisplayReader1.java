@@ -1,27 +1,21 @@
 package com.constellio.app.services.schemasDisplay;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import com.constellio.app.entities.schemasDisplay.enums.MetadataDisplayType;
-import org.apache.commons.lang3.StringUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
-
 import com.constellio.app.entities.schemasDisplay.MetadataDisplayConfig;
 import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
 import com.constellio.app.entities.schemasDisplay.SchemaTypeDisplayConfig;
 import com.constellio.app.entities.schemasDisplay.SchemaTypesDisplayConfig;
+import com.constellio.app.entities.schemasDisplay.enums.MetadataDisplayType;
 import com.constellio.app.entities.schemasDisplay.enums.MetadataInputType;
 import com.constellio.model.entities.Language;
 import com.constellio.model.entities.schemas.Metadata;
 import com.constellio.model.entities.schemas.MetadataSchema;
 import com.constellio.model.entities.schemas.MetadataSchemaTypes;
 import com.constellio.model.services.schemas.SchemaUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
+
+import java.util.*;
 
 public class SchemasDisplayReader1 {
 	private static final String ROOT = "display";
@@ -192,7 +186,7 @@ public class SchemasDisplayReader1 {
 						}
 					}
 
-					List<String> availables = SchemaDisplayUtils.getAvailableMetadatasInSchemaForm(schema).toMetadatasCodesList();
+					List<String> availables = SchemaDisplayUtils.getAvailableMetadatasInSchemaForm(schema).onlyEnabled().toMetadatasCodesList();
 					for (Iterator<String> iterator = formMetadataCodes.iterator(); iterator.hasNext(); ) {
 						if (!availables.contains(iterator.next())) {
 							iterator.remove();

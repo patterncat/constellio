@@ -1,18 +1,10 @@
 package com.constellio.app.ui.pages.management.schemas.display.form;
 
-import static com.constellio.app.ui.i18n.i18n.$;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
 import com.constellio.app.services.schemasDisplay.SchemaDisplayUtils;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
 import com.constellio.app.ui.application.NavigatorConfigurationService;
-import com.constellio.app.ui.entities.FormMetadataSchemaVO;
 import com.constellio.app.ui.entities.FormMetadataVO;
-import com.constellio.app.ui.framework.builders.MetadataSchemaToFormVOBuilder;
 import com.constellio.app.ui.framework.builders.MetadataToFormVOBuilder;
 import com.constellio.app.ui.framework.builders.MetadataToVOBuilder;
 import com.constellio.app.ui.framework.data.MetadataVODataProvider;
@@ -21,10 +13,15 @@ import com.constellio.app.ui.params.ParamUtils;
 import com.constellio.model.entities.CorePermissions;
 import com.constellio.model.entities.records.wrappers.User;
 import com.constellio.model.entities.schemas.Metadata;
-import com.constellio.model.entities.schemas.MetadataSchema;
 import com.constellio.model.frameworks.validation.ValidationRuntimeException;
 import com.constellio.model.services.schemas.MetadataList;
 import com.constellio.model.services.schemas.MetadataSchemasManager;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static com.constellio.app.ui.i18n.i18n.$;
 
 public class FormDisplayConfigPresenter extends SingleSchemaBasePresenter<FormDisplayConfigView> {
 
@@ -56,9 +53,9 @@ public class FormDisplayConfigPresenter extends SingleSchemaBasePresenter<FormDi
 		List<FormMetadataVO> formMetadataVOs = new ArrayList<>();
 		MetadataToFormVOBuilder builder = new MetadataToFormVOBuilder(view.getSessionContext());
 		for (Metadata metadata : list) {
-			//if (this.isAllowedMetadata(metadata)) {
-			formMetadataVOs.add(builder.build(metadata, displayManager, parameters.get("schemaTypeCode"), view.getSessionContext()));
-			//}
+			if (this.isAllowedMetadata(metadata)) {
+				formMetadataVOs.add(builder.build(metadata, displayManager, parameters.get("schemaTypeCode"), view.getSessionContext()));
+			}
 		}
 
 		return formMetadataVOs;
@@ -79,16 +76,20 @@ public class FormDisplayConfigPresenter extends SingleSchemaBasePresenter<FormDi
 		return formMetadataVOs;
 	}
 
-	//	private boolean isAllowedMetadata(Metadata metadata) {
-	//		List<Metadata> restrictedMetadata = Arrays.asList(Schemas.SCHEMA, Schemas.VERSION, Schemas.PATH, Schemas.PRINCIPAL_PATH,
-	//				Schemas.PARENT_PATH, Schemas.AUTHORIZATIONS, Schemas.REMOVED_AUTHORIZATIONS, Schemas.INHERITED_AUTHORIZATIONS,
-	//				Schemas.ALL_AUTHORIZATIONS, Schemas.IS_DETACHED_AUTHORIZATIONS, Schemas.TOKENS, Schemas.COLLECTION,
-	//				Schemas.FOLLOWERS, Schemas.LOGICALLY_DELETED_STATUS);
-	//
-	//		List<String> localCodes = new SchemaUtils().toMetadataLocalCodes(restrictedMetadata);
-	//
-	//		return !localCodes.contains(metadata.getLocalCode());
-	//	}
+		private boolean isAllowedMetadata(Metadata metadata) {
+//			List<Metadata> restrictedMetadata = Arrays.asList(Schemas.SCHEMA, Schemas.VERSION, Schemas.PATH, Schemas.PRINCIPAL_PATH,
+//					Schemas.PARENT_PATH, Schemas.AUTHORIZATIONS, Schemas.REMOVED_AUTHORIZATIONS, Schemas.INHERITED_AUTHORIZATIONS,
+//					Schemas.ALL_AUTHORIZATIONS, Schemas.IS_DETACHED_AUTHORIZATIONS, Schemas.TOKENS, Schemas.COLLECTION,
+//					Schemas.FOLLOWERS, Schemas.LOGICALLY_DELETED_STATUS);
+//
+//			List<String> localCodes = new SchemaUtils().toMetadataLocalCodes(restrictedMetadata);
+//
+//			return !localCodes.contains(metadata.getLocalCode());
+			SchemasDisplayManager displayManager = schemasDisplayManager();
+			List<String> codeList = displayManager.getSchema(collection, getSchemaCode()).getFormMetadataCodes();
+
+			return metadata.isEnabled() || codeList.contains(metadata.getCode());
+		}
 
 	public void saveButtonClicked(List<FormMetadataVO> schemaVOs) {
 		SchemasDisplayManager manager = schemasDisplayManager();

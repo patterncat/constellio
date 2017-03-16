@@ -53,7 +53,7 @@ public class SearchDisplayConfigPresenter extends SingleSchemaBasePresenter<Sear
 		for (Metadata metadata : list) {
 			FormMetadataVO metadataVO = builder
 					.build(metadata, displayManager, parameters.get("schemaTypeCode"), view.getSessionContext());
-			if (this.isAllowedMetadata(metadataVO) && metadata.isEnabled()) {
+			if (this.isAllowedMetadata(metadataVO)) {
 				formMetadataVOs.add(metadataVO);
 			}
 		}
@@ -100,7 +100,10 @@ public class SearchDisplayConfigPresenter extends SingleSchemaBasePresenter<Sear
 
 		result = !restrictedType.contains(metadataVO.getValueType()) && !localCodes.contains(metadataVO.getLocalcode());
 
-		return result && metadataVO.isEnabled();
+		SchemasDisplayManager displayManager = schemasDisplayManager();
+		List<String> codeList = displayManager.getSchema(collection, getSchemaCode()).getSearchResultsMetadataCodes();
+
+		return result && (metadataVO.isEnabled() || codeList.contains(metadataVO.getCode()));
 	}
 
 	public void saveButtonClicked(List<FormMetadataVO> schemaVOs) {

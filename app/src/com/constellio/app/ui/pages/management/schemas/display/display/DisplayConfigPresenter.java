@@ -50,7 +50,7 @@ public class DisplayConfigPresenter extends SingleSchemaBasePresenter<DisplayCon
 		List<FormMetadataVO> formMetadataVOs = new ArrayList<>();
 		MetadataToFormVOBuilder builder = new MetadataToFormVOBuilder(view.getSessionContext());
 		for (Metadata metadata : list) {
-			if (this.isAllowedMetadata(metadata) && metadata.isEnabled()) {
+			if (this.isAllowedMetadata(metadata)) {
 				formMetadataVOs
 						.add(builder.build(metadata, displayManager, parameters.get("schemaTypeCode"), view.getSessionContext()));
 			}
@@ -96,7 +96,10 @@ public class DisplayConfigPresenter extends SingleSchemaBasePresenter<DisplayCon
 
 		List<String> localCodes = new SchemaUtils().toMetadataLocalCodes(restrictedMetadata);
 
-		return !localCodes.contains(metadata.getLocalCode()) && metadata.isEnabled();
+		SchemasDisplayManager displayManager = schemasDisplayManager();
+		List<String> codeList = displayManager.getSchema(collection, getSchemaCode()).getDisplayMetadataCodes();
+
+		return !localCodes.contains(metadata.getLocalCode()) && (metadata.isEnabled() || codeList.contains(metadata.getCode()));
 	}
 
 	public void saveButtonClicked(List<FormMetadataVO> schemaVOs) {
