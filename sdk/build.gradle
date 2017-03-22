@@ -49,6 +49,7 @@ dependencies {
     compile "org.joda:joda-convert:1.8.1"
     compile "com.google.code.findbugs:jsr305:3.0.0"
 }
+
 configurations {
     compile.exclude group: "org.ow2.asm:asm:asm-debug-all-5.0.1"
 }
@@ -59,7 +60,6 @@ eclipse {
         buildCommand 'compileJava'
     }
 }
-
 
 sourceSets {
     test {
@@ -105,11 +105,11 @@ sourceSets {
 }
 
 task buildSonarSourceset() {
-    List projectsList = [":app", ":model", ":data"];
+    List projectsList = [":app", ":model", ":data"]
 
     projectsList.each {
         project(it).sourceSets.main.allSource.srcDirs.each {
-            sourceSets.sonar.allJava.srcDirs += it;
+            sourceSets.sonar.allJava.srcDirs += it
         }
     }
 }

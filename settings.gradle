@@ -1,7 +1,6 @@
 include "data",
         "model",
         "app",
-//        "custom",
         "sdk"
 
 if (new File(rootDir, "../constellio-plugins").exists()) {
@@ -37,7 +36,6 @@ if (new File(rootDir, "../constellio-plugins").exists()) {
 project(":data").projectDir = file("./data")
 project(":model").projectDir = file("./model")
 project(":app").projectDir = file("./app")
-//project(":custom").projectDir = file("./custom")
 project(":sdk").projectDir = file("./sdk")
 
 if (new File(rootDir, "../constellio-plugins").exists()) {

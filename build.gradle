@@ -1,5 +1,5 @@
 plugins {
-    id "fi.jasoft.plugin.vaadin" version '0.11.4' apply false
+    id "fi.jasoft.plugin.vaadin" version '1.0' apply false
     id "org.sonarqube" version "1.2" apply false
 }
 
@@ -151,18 +151,6 @@ dependencies {
     compile project(":app")
 }
 
-task compileData() {
-    dependsOn project(":data").compileJava
-}
-
-task compileModel() {
-    dependsOn project(":model").compileJava
-}
-
-task compileApp() {
-    dependsOn project(":app").compileJava
-}
-
 task compilePlugin() {
     if (new File("./jarProject").exists()) {
         String projectName = new File("./jarProject").text.trim()
@@ -170,26 +158,8 @@ task compilePlugin() {
     }
 }
 
-task unWar(type: Copy) {
-    def outputDir = buildDir.getAbsolutePath() + "/tmp/war_tmp/"
-
-    from zipTree(war.archivePath)
-    into outputDir
-}
-
-task installer(type: Zip, dependsOn: [build, unWar]) {
-    from(buildDir.getAbsolutePath() + "/tmp/war_tmp/") {
-        exclude "WEB-INF/lib/tika-app*.jar"
-        exclude "WEB-INF/lib/apache-mime4j-0.6.jar"
-        into("webapp")
-    }
-
-    from "dist/install/"
-    into "intelligid"
-}
-
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.0'
+    gradleVersion = '3.2.1'
 }
 
 eclipse {
