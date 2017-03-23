@@ -18,6 +18,7 @@ import com.constellio.app.ui.application.CoreViews;
 import com.constellio.app.ui.application.Navigation;
 import com.constellio.app.ui.framework.buttons.BackButton;
 import com.constellio.app.ui.framework.components.breadcrumb.BaseBreadcrumbTrail;
+import com.constellio.app.ui.framework.components.loading.LoadingIndicator;
 import com.constellio.app.ui.framework.decorators.base.ActionMenuButtonsDecorator;
 import com.constellio.app.ui.pages.home.HomeViewImpl;
 import com.vaadin.event.UIEvents.PollEvent;
@@ -193,6 +194,8 @@ public abstract class BaseViewImpl extends VerticalLayout implements View, BaseV
 //		js.append("} catch (Exception) { window.location='http://localhost:7070/constellio/#!adminModule'; }"); 
 //		js.append("}, 10000);}, 1000);");
 //		if (true) com.vaadin.ui.JavaScript.eval(js.toString());
+		LoadingIndicator loadingIndicator = new LoadingIndicator();
+		loadingIndicator.setVisible(false);
 	}
 
 	protected BaseBreadcrumbTrail buildBreadcrumbTrail() {

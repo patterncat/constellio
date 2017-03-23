@@ -58,9 +58,41 @@ $popup-view-z-index: 3;
 		text-align: left;
 		left: 20px;
 	}
+} 
+	
+.custom-loader {
+    position: fixed; /* or absolute */
+    top: 50%;
+    left: 50%;
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 @mixin constellio {
+
+	.v-loading-indicator[style*="none"]:before {
+	  display: none;
+	}
+	
+	.v-loading-indicator-delay:before, .v-loading-indicator-wait:before {
+	    content: "";
+	    position: fixed;
+	    background: rgba(0,0,0,.5);
+	    top: 0;
+	    left: 0;
+	    right: 0;
+	    bottom: 0;
+	    pointer-events: auto;
+	}
 
 	.v-tooltip {
 	    font-weight: bold;

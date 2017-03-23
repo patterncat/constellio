@@ -5,11 +5,12 @@ import static com.constellio.app.ui.i18n.i18n.$;
 import java.util.List;
 
 import com.constellio.app.services.factories.ConstellioFactories;
-import com.constellio.app.ui.application.CoreViews;
 import com.constellio.app.ui.application.ConstellioUI;
+import com.constellio.app.ui.application.CoreViews;
 import com.constellio.app.ui.entities.MetadataSchemaTypeVO;
 import com.constellio.app.ui.framework.buttons.SearchButton;
 import com.constellio.app.ui.framework.components.fields.BaseTextField;
+import com.constellio.app.ui.framework.components.loading.LoadingIndicator;
 import com.constellio.app.ui.handlers.OnEnterKeyHandler;
 import com.constellio.app.ui.pages.search.AdvancedSearchCriteriaComponent;
 import com.constellio.app.ui.pages.search.AdvancedSearchView;
@@ -104,14 +105,14 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 		searchButton.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				presenter.searchRequested(searchField.getValue(), getAdvancedSearchSchemaType());
+				searchRequested();
 			}
 		});
 
 		OnEnterKeyHandler onEnterHandler = new OnEnterKeyHandler() {
 			@Override
 			public void onEnterKeyPressed() {
-				presenter.searchRequested(searchField.getValue(), getAdvancedSearchSchemaType());
+				searchRequested();
 			}
 		};
 		onEnterHandler.installOn(searchField);
@@ -158,6 +159,18 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 			}
 		});
 	}
+	
+	private void searchRequested() {
+		final LoadingIndicator loadingIndicator = new LoadingIndicator();
+		loadingIndicator.setVisible(true);
+		new Thread() {
+			@Override
+			public void run() {
+				presenter.searchRequested(searchField.getValue(), getAdvancedSearchSchemaType());
+				loadingIndicator.setVisible(false);
+			}
+		}.start();
+	}
 
 	private void adjustSearchFieldContent() {
 		if (advancedSearchForm.isPopupVisible()) {
@@ -195,7 +208,7 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 		advancedSearch.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				presenter.searchRequested(searchField.getValue(), getAdvancedSearchSchemaType());
+				searchRequested();
 			}
 		});
 
@@ -326,4 +339,5 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 	public ConstellioFactories getConstellioFactories() {
 		return ConstellioFactories.getInstance();
 	}
+	
 }

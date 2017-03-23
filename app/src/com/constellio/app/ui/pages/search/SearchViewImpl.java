@@ -66,6 +66,10 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 	private VerticalLayout facetsArea;
 	private SearchResultTable results;
 	private SelectDeselectAllButton selectDeselectAllButton;
+	
+	public SearchViewImpl() {
+		super();
+	}
 
 	@Override
 	protected boolean isFullWidthIfActionMenuAbsent() {
@@ -78,7 +82,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 	}
 
 	@Override
-	protected void initBeforeCreateComponents(ViewChangeEvent event) {
+	protected void initBeforeCreateComponents(final ViewChangeEvent event) {
 		presenter.resetFacetSelection();
 		presenter.forRequestParameters(event.getParameters());
 	}
@@ -329,7 +333,12 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		deselect.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				presenter.facetDeselected(facet.getId());
+				new Thread() {
+					@Override
+					public void run() {
+						presenter.facetDeselected(facet.getId());
+					}
+				}.start();
 			}
 		});
 
@@ -365,11 +374,16 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 			checkBox.addValueChangeListener(new ValueChangeListener() {
 				@Override
 				public void valueChange(ValueChangeEvent event) {
-					if (checkBox.getValue()) {
-						presenter.facetValueSelected(facetValue.getFacetId(), facetValue.getValue());
-					} else {
-						presenter.facetValueDeselected(facetValue.getFacetId(), facetValue.getValue());
-					}
+					new Thread() {
+						@Override
+						public void run() {
+							if (checkBox.getValue()) {
+								presenter.facetValueSelected(facetValue.getFacetId(), facetValue.getValue());
+							} else {
+								presenter.facetValueDeselected(facetValue.getFacetId(), facetValue.getValue());
+							}
+						}
+					}.start();
 				}
 			});
 
@@ -388,15 +402,20 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		toggle.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				if (toggle.getCaption().equals("+")) {
-					toggle.setCaption("—");
-					table.setVisible(true);
-					presenter.facetOpened(facet.getId());
-				} else {
-					toggle.setCaption("+");
-					table.setVisible(false);
-					presenter.facetClosed(facet.getId());
-				}
+				new Thread() {
+					@Override
+					public void run() {
+						if (toggle.getCaption().equals("+")) {
+							toggle.setCaption("—");
+							table.setVisible(true);
+							presenter.facetOpened(facet.getId());
+						} else {
+							toggle.setCaption("+");
+							table.setVisible(false);
+							presenter.facetClosed(facet.getId());
+						}
+					}
+				}.start();
 			}
 		});
 
@@ -410,20 +429,30 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		selectDeselectAllButton = new SelectDeselectAllButton() {
 			@Override
 			protected void onSelectAll(ClickEvent event) {
-				if (isDetailedView()) {
-					((SearchResultDetailedTable) results).selectCurrentPage();
-				} else {
-					((SearchResultSimpleTable) results).selectAll();
-				}
+				new Thread() {
+					@Override
+					public void run() {
+						if (isDetailedView()) {
+							((SearchResultDetailedTable) results).selectCurrentPage();
+						} else {
+							((SearchResultSimpleTable) results).selectAll();
+						}
+					}
+				}.start();
 			}
 
 			@Override
 			protected void onDeselectAll(ClickEvent event) {
-				if (isDetailedView()) {
-					((SearchResultDetailedTable) results).deselectCurrentPage();
-				} else {
-					((SearchResultSimpleTable) results).deselectAll();
-				}
+				new Thread() {
+					@Override
+					public void run() {
+						if (isDetailedView()) {
+							((SearchResultDetailedTable) results).deselectCurrentPage();
+						} else {
+							((SearchResultSimpleTable) results).deselectAll();
+						}
+					}
+				}.start();	
 			}
 		};
 		selectDeselectAllButton.addStyleName(ValoTheme.BUTTON_LINK);

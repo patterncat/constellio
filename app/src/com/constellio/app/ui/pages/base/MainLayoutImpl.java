@@ -254,5 +254,9 @@ public class MainLayoutImpl extends VerticalLayout implements MainLayout {
 	public ConstellioHeaderImpl getHeader() {
 		return header;
 	}
+	
+	public void setContent(Component content) {
+		contentViewWrapper.setContent(content);
+	}
 
 }
