@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 
 public class SmbNewFolderRetrievalJob extends SmbConnectorJob {
 	private static final String jobName = SmbNewFolderRetrievalJob.class.getSimpleName();
-	private final JobParams jobParams;;
+	private final JobParams jobParams;
 
 	public SmbNewFolderRetrievalJob(JobParams jobParams) {
 		super(jobParams.getConnector(), jobName);

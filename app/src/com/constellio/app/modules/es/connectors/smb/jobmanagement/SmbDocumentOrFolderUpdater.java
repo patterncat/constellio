@@ -110,7 +110,11 @@ public class SmbDocumentOrFolderUpdater {
 		// Optional
 
 		// Errors
-		smbFolder.setLastFetchedStatus(LastFetchedStatus.OK);
+		if (parentId == null) {
+			smbFolder.setLastFetchedStatus(LastFetchedStatus.PARTIAL);
+		} else {
+			smbFolder.setLastFetchedStatus(LastFetchedStatus.OK);
+		}
 
 		smbFolder.setErrorCode(null);
 		smbFolder.setErrorMessage(null);
