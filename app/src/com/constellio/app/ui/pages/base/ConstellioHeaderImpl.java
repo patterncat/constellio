@@ -57,6 +57,7 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 	private PopupView advancedSearchForm;
 	private Button clearAdvancedSearch;
 	private AdvancedSearchCriteriaComponent criteria;
+	private Button searchButton;
 
 	public ConstellioHeaderImpl() {
 		presenter = new ConstellioHeaderPresenter(this);
@@ -99,9 +100,10 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 		});
 		showAdvancedSearch.addStyleName(SHOW_ADVANCED_SEARCH_POPUP_HIDDEN_STYLE_NAME);
 
-		Button searchButton = new SearchButton();
+		searchButton = new SearchButton();
 		searchButton.addStyleName("header-search-button");
 		searchButton.addStyleName(ValoTheme.BUTTON_PRIMARY);
+		searchButton.setDisableOnClick(true);
 		searchButton.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
@@ -112,7 +114,7 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 		OnEnterKeyHandler onEnterHandler = new OnEnterKeyHandler() {
 			@Override
 			public void onEnterKeyPressed() {
-				searchRequested();
+				searchButton.click();
 			}
 		};
 		onEnterHandler.installOn(searchField);
@@ -338,6 +340,11 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 	@Override
 	public ConstellioFactories getConstellioFactories() {
 		return ConstellioFactories.getInstance();
+	}
+
+	@Override
+	public void setSearchButtonEnabled(boolean enabled) {
+		searchButton.setEnabled(enabled);
 	}
 	
 }

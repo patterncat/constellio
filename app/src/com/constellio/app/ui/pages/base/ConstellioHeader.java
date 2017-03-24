@@ -31,4 +31,7 @@ public interface ConstellioHeader extends Serializable {
 	String getCollection();
 
 	ConstellioFactories getConstellioFactories();
+	
+	void setSearchButtonEnabled(boolean enabled);
+	
 }

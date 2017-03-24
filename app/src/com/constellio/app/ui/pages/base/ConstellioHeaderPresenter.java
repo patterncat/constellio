@@ -44,6 +44,7 @@ public class ConstellioHeaderPresenter implements SearchCriteriaPresenter {
 		} else if (StringUtils.isNotBlank(expression)) {
 			header.hideAdvancedSearchPopup().navigateTo().simpleSearch(expression);
 		}
+		header.setSearchButtonEnabled(true);
 	}
 
 	public void addCriterionRequested() {
