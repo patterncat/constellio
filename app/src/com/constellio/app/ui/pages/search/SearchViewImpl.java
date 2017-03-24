@@ -333,12 +333,12 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		deselect.addValueChangeListener(new ValueChangeListener() {
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				new Thread() {
+				getSession().access(new Runnable() {
 					@Override
 					public void run() {
 						presenter.facetDeselected(facet.getId());
 					}
-				}.start();
+				});
 			}
 		});
 
@@ -374,7 +374,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 			checkBox.addValueChangeListener(new ValueChangeListener() {
 				@Override
 				public void valueChange(ValueChangeEvent event) {
-					new Thread() {
+					getSession().access(new Runnable() {
 						@Override
 						public void run() {
 							if (checkBox.getValue()) {
@@ -383,7 +383,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 								presenter.facetValueDeselected(facetValue.getFacetId(), facetValue.getValue());
 							}
 						}
-					}.start();
+					});
 				}
 			});
 
@@ -402,7 +402,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		toggle.addClickListener(new ClickListener() {
 			@Override
 			public void buttonClick(ClickEvent event) {
-				new Thread() {
+				getSession().access(new Runnable() {
 					@Override
 					public void run() {
 						if (toggle.getCaption().equals("+")) {
@@ -415,7 +415,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 							presenter.facetClosed(facet.getId());
 						}
 					}
-				}.start();
+				});
 			}
 		});
 
@@ -429,7 +429,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 		selectDeselectAllButton = new SelectDeselectAllButton() {
 			@Override
 			protected void onSelectAll(ClickEvent event) {
-				new Thread() {
+				getSession().access(new Runnable() {
 					@Override
 					public void run() {
 						if (isDetailedView()) {
@@ -438,12 +438,12 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 							((SearchResultSimpleTable) results).selectAll();
 						}
 					}
-				}.start();
+				});
 			}
 
 			@Override
 			protected void onDeselectAll(ClickEvent event) {
-				new Thread() {
+				getSession().access(new Runnable() {
 					@Override
 					public void run() {
 						if (isDetailedView()) {
@@ -452,7 +452,7 @@ public abstract class SearchViewImpl<T extends SearchPresenter> extends BaseView
 							((SearchResultSimpleTable) results).deselectAll();
 						}
 					}
-				}.start();	
+				});
 			}
 		};
 		selectDeselectAllButton.addStyleName(ValoTheme.BUTTON_LINK);

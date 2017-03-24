@@ -163,13 +163,13 @@ public class ConstellioHeaderImpl extends HorizontalLayout implements Constellio
 	private void searchRequested() {
 		final LoadingIndicator loadingIndicator = new LoadingIndicator();
 		loadingIndicator.setVisible(true);
-		new Thread() {
+		getSession().access(new Runnable() {
 			@Override
 			public void run() {
 				presenter.searchRequested(searchField.getValue(), getAdvancedSearchSchemaType());
 				loadingIndicator.setVisible(false);
 			}
-		}.start();
+		});
 	}
 
 	private void adjustSearchFieldContent() {
