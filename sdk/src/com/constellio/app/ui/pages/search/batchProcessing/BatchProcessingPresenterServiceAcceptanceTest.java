@@ -1,33 +1,5 @@
 package com.constellio.app.ui.pages.search.batchProcessing;
 
-import static com.constellio.app.modules.rm.model.enums.FolderStatus.INACTIVE_DEPOSITED;
-import static com.constellio.model.entities.schemas.MetadataValueType.BOOLEAN;
-import static com.constellio.model.entities.schemas.MetadataValueType.DATE;
-import static com.constellio.model.entities.schemas.MetadataValueType.DATE_TIME;
-import static com.constellio.model.entities.schemas.MetadataValueType.ENUM;
-import static com.constellio.model.entities.schemas.MetadataValueType.NUMBER;
-import static com.constellio.model.entities.schemas.MetadataValueType.STRING;
-import static com.constellio.model.entities.schemas.MetadataValueType.TEXT;
-import static com.constellio.model.entities.security.global.AuthorizationAddRequest.authorizationForUsers;
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.fromAllSchemasIn;
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.where;
-import static com.constellio.sdk.tests.TestUtils.assertThatRecord;
-import static com.constellio.sdk.tests.TestUtils.extractingSimpleCodeAndParameters;
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.groups.Tuple.tuple;
-import static org.junit.Assert.fail;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.constellio.app.modules.rm.RMTestRecords;
 import com.constellio.app.modules.rm.constants.RMPermissionsTo;
 import com.constellio.app.modules.rm.model.CopyRetentionRuleFactory;
@@ -37,9 +9,11 @@ import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
 import com.constellio.app.modules.rm.wrappers.ContainerRecord;
 import com.constellio.app.modules.rm.wrappers.Document;
 import com.constellio.app.modules.rm.wrappers.Folder;
+import com.constellio.app.ui.entities.RecordVO;
 import com.constellio.app.ui.pages.search.batchProcessing.entities.BatchProcessRequest;
 import com.constellio.app.ui.pages.search.batchProcessing.entities.BatchProcessResults;
 import com.constellio.app.ui.util.DateFormatUtils;
+import com.constellio.model.entities.batchprocess.BatchProcessAction;
 import com.constellio.model.entities.records.Transaction;
 import com.constellio.model.entities.records.wrappers.User;
 import com.constellio.model.entities.schemas.MetadataSchema;
@@ -59,13 +33,36 @@ import com.constellio.model.services.search.query.logical.LogicalSearchQuery;
 import com.constellio.model.services.security.AuthorizationsServices;
 import com.constellio.sdk.tests.ConstellioTest;
 import com.constellio.sdk.tests.setups.Users;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+
+import java.util.*;
+
+import static com.constellio.app.modules.rm.model.enums.FolderStatus.INACTIVE_DEPOSITED;
+import static com.constellio.model.entities.schemas.MetadataValueType.*;
+import static com.constellio.model.entities.security.global.AuthorizationAddRequest.authorizationForUsers;
+import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.fromAllSchemasIn;
+import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.where;
+import static com.constellio.sdk.tests.TestUtils.assertThatRecord;
+import static com.constellio.sdk.tests.TestUtils.extractingSimpleCodeAndParameters;
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 public class BatchProcessingPresenterServiceAcceptanceTest extends ConstellioTest {
 
 	RMSchemasRecordsServices rm;
 	RMTestRecords records = new RMTestRecords(zeCollection);
 	Users users = new Users();
-	BatchProcessingPresenterService presenterService;
+	@Mock BatchProcessingPresenterService presenterService;
 	MetadataSchema folderSchema;
 	MetadataSchemaType folderSchemaType;
 	SearchServices searchServices;
@@ -92,7 +89,7 @@ public class BatchProcessingPresenterServiceAcceptanceTest extends ConstellioTes
 
 		folderSchemaType = rm.folderSchemaType();
 		searchServices = getModelLayerFactory().newSearchServices();
-		presenterService = new BatchProcessingPresenterService(zeCollection, getAppLayerFactory(), Locale.FRENCH);
+		presenterService = spy(new BatchProcessingPresenterService(zeCollection, getAppLayerFactory(), Locale.FRENCH));
 		copyRetentionRuleFactory = new CopyRetentionRuleFactory();
 
 		Transaction transaction = new Transaction();
@@ -994,5 +991,53 @@ public class BatchProcessingPresenterServiceAcceptanceTest extends ConstellioTes
 		assertThat(presenterService.hasWriteAccessOnAllRecords(alice, asList("dA42", "dA84"))).isTrue();
 		assertThat(presenterService.hasWriteAccessOnAllRecords(alice, asList("dA84", "dA85"))).isFalse();
 
+	}
+
+	@Test
+	public void givenEmptyIdListThenNoErrorTrown() throws RecordServicesException {
+		Transaction transaction = new Transaction();
+		transaction.add(rm.setType(records.getFolder_A01(), records.folderTypeEmploye())).set("subType", "customSubType")
+				.setTitle("zetest");
+		transaction.add(rm.setType(records.getFolder_A02(), records.folderTypeEmploye())).setTitle("zetest");
+		getModelLayerFactory().newRecordServices().execute(transaction);
+
+		assertThat(records.getFolder_A01().get("subType")).isEqualTo("customSubType");
+		assertThat(records.getFolder_A02().get("subType")).isEqualTo("Dossier d'employé général");
+
+		BatchProcessRequest request = new BatchProcessRequest().setUser(users.adminIn(zeCollection))
+				.setIds(new ArrayList<String>())
+				.addModifiedMetadata(Folder.TYPE, records.folderTypeMeeting().getId());
+
+		Map<String, Object> modifications = new HashMap<>();
+		modifications.put(Folder.DEFAULT_SCHEMA + "_" + Folder.TYPE, records.folderTypeMeeting().getId());
+		doReturn(null).when(presenterService).toRequest(anyString(), any(List.class), any(RecordVO.class), any(User.class));
+		doReturn(null).when(presenterService).toAction(anyString(), any(RecordVO.class));
+		doReturn(null).when(presenterService).execute(any(BatchProcessRequest.class), any(BatchProcessAction.class), any(List.class),
+				anyString(), anyString());
+		presenterService.execute(Folder.SCHEMA_TYPE, new ArrayList(), null, records.getAdmin());
+	}
+
+	@Test
+	public void givenNullIdListThenNoErrorTrown() throws RecordServicesException {
+		Transaction transaction = new Transaction();
+		transaction.add(rm.setType(records.getFolder_A01(), records.folderTypeEmploye())).set("subType", "customSubType")
+				.setTitle("zetest");
+		transaction.add(rm.setType(records.getFolder_A02(), records.folderTypeEmploye())).setTitle("zetest");
+		getModelLayerFactory().newRecordServices().execute(transaction);
+
+		assertThat(records.getFolder_A01().get("subType")).isEqualTo("customSubType");
+		assertThat(records.getFolder_A02().get("subType")).isEqualTo("Dossier d'employé général");
+
+		BatchProcessRequest request = new BatchProcessRequest().setUser(users.adminIn(zeCollection))
+				.setIds(null)
+				.addModifiedMetadata(Folder.TYPE, records.folderTypeMeeting().getId());
+
+		Map<String, Object> modifications = new HashMap<>();
+		modifications.put(Folder.DEFAULT_SCHEMA + "_" + Folder.TYPE, records.folderTypeMeeting().getId());
+		doReturn(null).when(presenterService).toRequest(anyString(), any(List.class), any(RecordVO.class), any(User.class));
+		doReturn(null).when(presenterService).toAction(anyString(), any(RecordVO.class));
+		doReturn(null).when(presenterService).execute(any(BatchProcessRequest.class), any(BatchProcessAction.class), any(List.class),
+				anyString(), anyString());
+		presenterService.execute(Folder.SCHEMA_TYPE, (List) null, null, records.getAdmin());
 	}
 }
