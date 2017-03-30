@@ -100,7 +100,7 @@ public class RMBorrowRequestButtonExtension extends PagesComponentsExtension {
 
     private Button buildRequestBorrowButton(final BaseViewImpl view) {
         if (view instanceof DisplayFolderViewImpl) {
-            return new BaseButton($("DisplayFolderView.borrow")) {
+            return new BaseButton($("DisplayFolderView.borrowRequest")) {
                 @Override
                 protected void buttonClick(ClickEvent event) {
                     ConfirmDialog.show(
@@ -130,7 +130,7 @@ public class RMBorrowRequestButtonExtension extends PagesComponentsExtension {
                 }
             };
         } else if (view instanceof DisplayContainerViewImpl) {
-            return new ConfirmDialogButton($("DisplayFolderView.borrow")) {
+            return new ConfirmDialogButton($("DisplayFolderView.borrowRequest")) {
 
                 @Override
                 protected String getConfirmDialogMessage() {
