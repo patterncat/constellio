@@ -28,14 +28,17 @@ public class SmbDocumentOrFolderUpdater {
 	}
 
 	public void updateDocumentOrFolder(SmbFileDTO smbFileDTO, ConnectorDocument<?> documentOrFolder, String parentId) {
+		updateDocumentOrFolder(smbFileDTO, documentOrFolder, parentId, false);
+	}
+
+	public void updateDocumentOrFolder(SmbFileDTO smbFileDTO, ConnectorDocument<?> documentOrFolder, String parentId, boolean seed) {
 		ConnectorSmbDocument smbDocument = smbRecordService.convertToSmbDocumentOrNull(documentOrFolder);
 		if (smbDocument != null) {
 			updateFullDocumentDTO(smbFileDTO, smbDocument, parentId);
 		} else {
 			ConnectorSmbFolder smbFolder = smbRecordService.convertToSmbFolderOrNull(documentOrFolder);
-
 			if (smbFolder != null) {
-				updateFullFolderDTO(smbFileDTO, smbFolder, parentId);
+				updateFullFolderDTO(smbFileDTO, smbFolder, parentId, seed);
 			}
 		}
 	}
@@ -87,7 +90,7 @@ public class SmbDocumentOrFolderUpdater {
 				.withPropertyLabel("dateModified", $("SmbDocumentOrFolderUpdater.dateModified"));
 	}
 
-	private void updateFullFolderDTO(SmbFileDTO smbFileDTO, ConnectorSmbFolder smbFolder, String parentId) {
+	private void updateFullFolderDTO(SmbFileDTO smbFileDTO, ConnectorSmbFolder smbFolder, String parentId, boolean seed) {
 		smbFolder.setTitle(smbFileDTO.getName())
 				.setUrl(smbFileDTO.getUrl())
 				.setTraversalCode(connectorInstance.getTraversalCode())
@@ -110,7 +113,7 @@ public class SmbDocumentOrFolderUpdater {
 		// Optional
 
 		// Errors
-		if (parentId == null) {
+		if (parentId == null && !seed) {
 			smbFolder.setLastFetchedStatus(LastFetchedStatus.PARTIAL);
 		} else {
 			smbFolder.setLastFetchedStatus(LastFetchedStatus.OK);

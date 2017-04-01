@@ -18,7 +18,7 @@ import com.constellio.model.entities.schemas.MetadataValueType;
 
 public class ParentPathCalculator implements MetadataValueCalculator<List<String>> {
 
-	SpecialDependency<HierarchyDependencyValue> taxonomiesParam = SpecialDependencies.HIERARCHY;
+	protected SpecialDependency<HierarchyDependencyValue> taxonomiesParam = SpecialDependencies.HIERARCHY;
 
 	@Override
 	public List<String> calculate(CalculatorParameters parameters) {

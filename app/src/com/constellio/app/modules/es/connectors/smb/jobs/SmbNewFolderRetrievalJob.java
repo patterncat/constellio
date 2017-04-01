@@ -46,7 +46,11 @@ public class SmbNewFolderRetrievalJob extends SmbConnectorJob {
 						jobParams.getConnector().getContext().delete(jobParams.getParentUrl());
 					}
 				}
-				jobParams.getUpdater().updateDocumentOrFolder(smbFileDTO, fullFolder, parentId);
+				boolean seed = false;
+				if (jobParams.getConnectorInstance().getSeeds().contains(url)) {
+					seed = true;
+				}
+				jobParams.getUpdater().updateDocumentOrFolder(smbFileDTO, fullFolder, parentId, seed);
 				jobParams.getEventObserver().push(Arrays.asList((ConnectorDocument) fullFolder));
 				jobParams.getSmbRecordService().updateResumeUrl(url);
 				jobParams.getConnector().getContext().traverseModified(url, new SmbModificationIndicator(smbFileDTO), parentId, jobParams.getConnectorInstance().getTraversalCode());
