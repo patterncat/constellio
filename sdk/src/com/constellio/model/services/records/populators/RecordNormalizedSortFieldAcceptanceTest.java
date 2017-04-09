@@ -88,7 +88,7 @@ public class RecordNormalizedSortFieldAcceptanceTest extends ConstellioTest {
 		r1 = recordDao.getBigVaultServer().querySingleResult(getById("r1"));
 		r2 = recordDao.getBigVaultServer().querySingleResult(getById("r2"));
 		assertThat(r1.getFieldValue(datastoreCode)).isEqualTo("a000000020");
-		assertThat(r2.getFieldValue(datastoreCode)).isNull();
+		assertThat((String) r2.getFieldValue(datastoreCode)).isNullOrEmpty();
 
 		transaction = new Transaction();
 		transaction.add(recordServices.getDocumentById("r1").set(zeSchema.stringMetadata(), " "));
@@ -97,7 +97,7 @@ public class RecordNormalizedSortFieldAcceptanceTest extends ConstellioTest {
 
 		r1 = recordDao.getBigVaultServer().querySingleResult(getById("r1"));
 		r2 = recordDao.getBigVaultServer().querySingleResult(getById("r2"));
-		assertThat(r1.getFieldValue(datastoreCode)).isNull();
+		assertThat((String) r1.getFieldValue(datastoreCode)).isNullOrEmpty();
 		assertThat(r2.getFieldValue(datastoreCode)).isEqualTo("a000000020");
 	}
 

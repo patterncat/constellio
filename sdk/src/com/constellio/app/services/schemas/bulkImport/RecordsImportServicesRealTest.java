@@ -498,7 +498,7 @@ public class RecordsImportServicesRealTest extends ConstellioTest {
 		assertThat(record.get(zeSchema.dateMetadata())).isEqualTo(asList(aDate, anotherDate));
 		assertThat(record.get(zeSchema.dateTimeMetadata())).isEqualTo(asList(anotherDateTime, aDateTime));
 		assertThat(record.get(zeSchema.numberMetadata())).isEqualTo(asList(6.66, 42.0));
-		assertThat(record.get(zeCustomSchemaMetadatas.customStringMetadata())).isNull();
+		assertThat((String) record.get(zeCustomSchemaMetadatas.customStringMetadata())).isNullOrEmpty();
 		assertThat(record.get(zeSchema.enumMetadata())).isEqualTo(asList(AValidEnum.FIRST_VALUE, AValidEnum.SECOND_VALUE));
 	}
 

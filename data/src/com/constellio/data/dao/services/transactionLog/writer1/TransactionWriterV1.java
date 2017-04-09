@@ -109,7 +109,7 @@ public class TransactionWriterV1 {
 		Collection<String> fieldNames = document.getFieldNames();
 		for (String name : fieldNames) {
 			if (!name.equals("id") && !name.equals("_version_") && isLogged(name, schema_s, collection_s)) {
-				Collection<Object> value = removeEmptyStrings(document.getFieldValues(name));
+				Collection<Object> value = document.getFieldValues(name);
 
 				if (value.isEmpty()) {
 					appendValue(stringBuilder, name, "");
@@ -124,7 +124,7 @@ public class TransactionWriterV1 {
 							fieldLogName = firstKey + " " + name;
 
 							if (mapValue instanceof Collection) {
-								Collection<Object> mapValueList = removeEmptyStrings((Collection) mapValue);
+								Collection<Object> mapValueList = (Collection) mapValue;
 								if (mapValueList.isEmpty()) {
 									appendValue(stringBuilder, fieldLogName, "");
 								} else {
@@ -151,22 +151,6 @@ public class TransactionWriterV1 {
 				!name.endsWith("content_txt_fr") && !name.endsWith("content_txt_en") && !name.endsWith("contents_txt_fr") && !name
 						.endsWith("contents_txt_en");
 		return extensions.isDocumentFieldLoggedInTransactionLog(name, schema, collection, defaultValue);
-	}
-
-	private Collection<Object> removeEmptyStrings(Collection collection) {
-		if (collection.contains("")) {
-			List<Object> values = new ArrayList<>();
-
-			for (Object item : collection) {
-				if (!"".equals(item)) {
-					values.add(item);
-				}
-			}
-
-			return values;
-		} else {
-			return collection;
-		}
 	}
 
 	private void appendValue(StringBuilder stringBuilder, String fieldLogName, Object item) {
@@ -198,10 +182,10 @@ public class TransactionWriterV1 {
 
 		} else if (value instanceof Date) {
 			LocalDateTime dateTime = new LocalDateTime(value);
-			return zPattern.matcher(correctDate(dateTime).toString()).replaceAll(Matcher.quoteReplacement(""));
+			return zPattern.matcher(correctDate(dateTime).toString()).replaceAll(Matcher.quoteReplacement("")) + "Z";
 
 		} else if (value instanceof LocalDateTime || value instanceof LocalDate) {
-			return zPattern.matcher(value.toString()).replaceAll(Matcher.quoteReplacement(""));
+			return zPattern.matcher(value.toString()).replaceAll(Matcher.quoteReplacement("")) + "Z";
 
 		} else {
 			return lineFeedPattern.matcher(value.toString()).replaceAll(Matcher.quoteReplacement("__LINEBREAK__"));

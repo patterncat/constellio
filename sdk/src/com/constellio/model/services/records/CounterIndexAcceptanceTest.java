@@ -390,6 +390,7 @@ public class CounterIndexAcceptanceTest extends ConstellioTest {
 			if (ancestors == null) {
 				ancestors = new ArrayList<>();
 			}
+			ancestors.remove("");
 			assertThat(ancestors).isEqualTo(expectedAncestors);
 		} catch (NoSuchRecordWithId noSuchRecordWithId) {
 			fail("No counter index for record id '" + recordId + "'");
