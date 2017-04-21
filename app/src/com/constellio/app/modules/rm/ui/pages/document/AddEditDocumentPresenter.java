@@ -469,7 +469,12 @@ public class AddEditDocumentPresenter extends SingleSchemaBasePresenter<AddEditD
 		document.changeSchemaTo(newSchemaCode);
 		MetadataSchema newSchema = document.getSchema();
 
-		recordServices().recalculate(document);
+
+		if(!isAddView())
+		{
+			recordServices().recalculate(document);
+		}
+
 
 		for (MetadataVO metadataVO : documentVO.getMetadatas()) {
 			String metadataCode = metadataVO.getCode();
