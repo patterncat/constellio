@@ -92,7 +92,6 @@ public class AppManagementService {
 	private final UpgradeAppRecoveryService upgradeAppRecoveryService;
 
 	public AppManagementService(AppLayerFactory appLayerFactory, FoldersLocator foldersLocator) {
-
 		this.systemGlobalConfigsManager = appLayerFactory.getSystemGlobalConfigsManager();
 		this.pluginManager = appLayerFactory.getPluginManager();
 		this.fileService = appLayerFactory.getModelLayerFactory().getIOServicesFactory().newFileService();
@@ -355,7 +354,6 @@ public class AppManagementService {
 	}
 
 	private void updateWrapperConf(File deployFolder) {
-
 		LOGGER.info("New webapp path is '" + deployFolder.getAbsolutePath() + "'");
 		File wrapperConf = foldersLocator.getWrapperConf();
 		if (foldersLocator.getFoldersLocatorMode().equals(FoldersLocatorMode.PROJECT) && !wrapperConf.exists()) {
@@ -373,6 +371,23 @@ public class AppManagementService {
 			}
 			if (line.startsWith("wrapper.commandfile=")) {
 				lines.set(i, "wrapper.commandfile=" + deployFolder.getAbsolutePath() + "/WEB-INF/command/cmd");
+			}
+		}
+		fileService.writeLinesToFile(wrapperConf, lines);
+	}
+
+	public void updateJDKWrapperConf(File jdkFolder) {
+		LOGGER.info("New jdk path is '" + jdkFolder.getAbsolutePath() + "'");
+		File wrapperConf = foldersLocator.getWrapperConf();
+		if (foldersLocator.getFoldersLocatorMode().equals(FoldersLocatorMode.PROJECT) && !wrapperConf.exists()) {
+			return;
+		}
+		List<String> lines = fileService.readFileToLinesWithoutExpectableIOException(wrapperConf);
+		for (int i = 0; i < lines.size(); i++) {
+
+			String line = lines.get(i);
+			if (line.startsWith("wrapper.java.command=")) {
+				lines.set(i, "wrapper.java.command=" + jdkFolder.getAbsolutePath());
 			}
 		}
 		fileService.writeLinesToFile(wrapperConf, lines);
