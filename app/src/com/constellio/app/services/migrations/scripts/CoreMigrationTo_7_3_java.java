@@ -1,6 +1,11 @@
-package com.constellio.app.modules.rm.migrations;
+package com.constellio.app.services.migrations.scripts;
 
 import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileSystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.constellio.app.entities.modules.MigrationResourcesProvider;
 import com.constellio.app.entities.modules.MigrationScript;
@@ -10,7 +15,8 @@ import com.constellio.data.io.services.zip.ZipService;
 import com.constellio.data.io.services.zip.ZipServiceException;
 import com.constellio.model.conf.FoldersLocator;
 
-public class RMMigrationTo7_3_java implements MigrationScript {
+public class CoreMigrationTo_7_3_java implements MigrationScript {
+	private static final Logger LOGGER = LoggerFactory.getLogger(CoreMigrationTo_7_1.class);
 
     @Override
     public String getVersion() {
@@ -33,12 +39,18 @@ public class RMMigrationTo7_3_java implements MigrationScript {
         }
 
         try {
-            zipService.unzip(jdkZip, jdkFolder);
+			if (FileSystemUtils.freeSpaceKb("/opt/constellio") > ((jdkBin.length() / 1024) * 2)) {
+				zipService.unzip(jdkZip, jdkFolder);
+				updateService.updateJDKWrapperConf(jdkBin);
+			} else {
+				LOGGER.error("Need more space in the Constellio folder to upgrade");
+				// TODO EXCEPTION HERE
+				throw new RuntimeException("Need more space in the Constellio folder to upgrade");
+			}
         } catch (ZipServiceException ze) {
             ze.printStackTrace();
-        }
-
-        updateService.updateJDKWrapperConf(jdkBin);
-
+        } catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
     }
 }
