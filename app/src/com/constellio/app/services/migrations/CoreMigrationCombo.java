@@ -9,10 +9,8 @@ import com.constellio.app.services.factories.AppLayerFactory;
 import com.constellio.app.services.migrations.scripts.*;
 import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
-import com.constellio.model.entities.Language;
 import com.constellio.model.entities.records.Transaction;
 import com.constellio.model.entities.records.wrappers.Collection;
-import com.constellio.model.entities.records.wrappers.User;
 import com.constellio.model.entities.schemas.MetadataSchemaTypes;
 import com.constellio.model.entities.schemas.Schemas;
 import com.constellio.model.services.factories.ModelLayerFactory;
@@ -55,12 +53,18 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 		scripts.add(new CoreMigrationTo_6_5_14());
 		scripts.add(new CoreMigrationTo_6_5_19());
 		scripts.add(new CoreMigrationTo_6_5_21());
+		scripts.add(new CoreMigrationTo_6_5_50());
 		scripts.add(new CoreMigrationTo_6_5_22());
 		scripts.add(new CoreMigrationTo_6_5_42());
-		scripts.add(new CoreMigrationTo_6_5_50());
 		scripts.add(new CoreMigrationTo_6_6());
 		scripts.add(new CoreMigrationTo_7_0());
+		scripts.add(new CoreMigrationTo_7_0_1());
 		scripts.add(new CoreMigrationTo_7_1());
+		scripts.add(new CoreMigrationTo_7_1_1());
+		scripts.add(new CoreMigrationTo_7_1_3_1());
+		scripts.add(new CoreMigrationTo_7_2());
+		scripts.add(new CoreMigrationTo_7_3());
+		scripts.add(new CoreMigrationTo_7_3_0_1());
 
 		return scripts;
 	}
@@ -88,7 +92,7 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 			generatedSystemMigrationCombo.applyGeneratedRoles();
 			generatedSystemMigrationCombo.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		} else {
-			generatedFastCoreMigration.applyGeneratedRoles();
+//			generatedFastCoreMigration.applyGeneratedRoles();
 			generatedFastCoreMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		}
 		applySchemasDisplay2(collection, appLayerFactory.getMetadataSchemasDisplayManager());

@@ -1,50 +1,33 @@
 package com.constellio.app.modules.rm.migrations;
 
-import static com.constellio.app.ui.i18n.i18n.$;
-import static com.constellio.model.entities.Language.French;
-import static java.util.Arrays.asList;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.io.IOUtils;
-
 import com.constellio.app.entities.modules.ComboMigrationScript;
 import com.constellio.app.entities.modules.MetadataSchemasAlterationHelper;
 import com.constellio.app.entities.modules.MigrationResourcesProvider;
 import com.constellio.app.entities.modules.MigrationScript;
 import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
+import com.constellio.app.entities.schemasDisplay.enums.MetadataInputType;
 import com.constellio.app.modules.reports.wrapper.Printable;
 import com.constellio.app.modules.rm.RMEmailTemplateConstants;
 import com.constellio.app.modules.rm.constants.RMTaxonomies;
 import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
-import com.constellio.app.modules.rm.wrappers.ContainerRecord;
-import com.constellio.app.modules.rm.wrappers.Email;
-import com.constellio.app.modules.rm.wrappers.Folder;
-import com.constellio.app.modules.rm.wrappers.PrintableLabel;
+import com.constellio.app.modules.rm.wrappers.*;
 import com.constellio.app.modules.rm.wrappers.type.DocumentType;
+import com.constellio.app.modules.tasks.model.wrappers.Task;
+import com.constellio.app.modules.tasks.model.wrappers.request.BorrowRequest;
+import com.constellio.app.modules.tasks.model.wrappers.request.ExtensionRequest;
+import com.constellio.app.modules.tasks.model.wrappers.request.ReactivationRequest;
+import com.constellio.app.modules.tasks.model.wrappers.request.ReturnRequest;
+import com.constellio.app.modules.tasks.services.TasksSchemasRecordsServices;
 import com.constellio.app.services.factories.AppLayerFactory;
 import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
 import com.constellio.data.dao.managers.config.ConfigManagerException.OptimisticLockingConfiguration;
+import com.constellio.model.entities.Language;
 import com.constellio.model.entities.records.Record;
 import com.constellio.model.entities.records.Transaction;
 import com.constellio.model.entities.records.wrappers.Report;
 import com.constellio.model.entities.records.wrappers.UserDocument;
-import com.constellio.model.entities.schemas.MetadataSchema;
-import com.constellio.model.entities.schemas.MetadataSchemaType;
-import com.constellio.model.entities.schemas.MetadataSchemaTypes;
-import com.constellio.model.entities.schemas.MetadataValueType;
-import com.constellio.model.entities.schemas.Schemas;
+import com.constellio.model.entities.schemas.*;
 import com.constellio.model.services.configs.SystemConfigurationsManager;
 import com.constellio.model.services.contents.ContentManager;
 import com.constellio.model.services.contents.ContentVersionDataSummary;
@@ -58,6 +41,19 @@ import com.constellio.model.services.schemas.builders.MetadataSchemaBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypeBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
 import com.constellio.model.services.users.UserServices;
+import org.apache.commons.io.IOUtils;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.constellio.app.ui.i18n.i18n.$;
+import static com.constellio.model.entities.Language.French;
+import static java.util.Arrays.asList;
 
 public class RMMigrationCombo implements ComboMigrationScript {
 	@Override
@@ -103,7 +99,15 @@ public class RMMigrationCombo implements ComboMigrationScript {
 				new RMMigrationTo6_7(),
 				new RMMigrationTo7_0_5(),
 				new RMMigrationTo7_0_10_5(),
-				new RMMigrationTo7_1()
+				new RMMigrationTo7_1(),
+				new RMMigrationTo7_1_1(),
+				new RMMigrationTo7_1_2(),
+				new RMMigrationTo7_2(),
+				new RMMigrationTo7_2_0_1(),
+				new RMMigrationTo7_2_0_2(),
+				new RMMigrationTo7_2_0_3(),
+				new RMMigrationTo7_2_0_4(),
+				new RMMigrationTo7_3()
 		);
 	}
 
@@ -122,7 +126,7 @@ public class RMMigrationCombo implements ComboMigrationScript {
 				migrationResourcesProvider);
 
 		new SchemaAlteration(collection, migrationResourcesProvider, appLayerFactory).migrate();
-		generatedComboMigration.applyGeneratedRoles();
+//		generatedComboMigration.applyGeneratedRoles();
 		generatedComboMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		applySchemasDisplay2(collection, appLayerFactory.getMetadataSchemasDisplayManager());
 
@@ -146,8 +150,29 @@ public class RMMigrationCombo implements ComboMigrationScript {
 			@Override
 			public void alter(MetadataSchemaTypesBuilder types) {
 				types.getDefaultSchema(Folder.SCHEMA_TYPE).get(Folder.MAIN_COPY_RULE).addLabel(French, "Exemplaire");
+				MetadataBuilder metadataBorrowUser = types.getDefaultSchema(Folder.SCHEMA_TYPE)
+						.getMetadata(Folder.BORROW_USER);
+				MetadataBuilder metadataBorrowUserEntered = types.getDefaultSchema(Folder.SCHEMA_TYPE)
+						.getMetadata(Folder.BORROW_USER_ENTERED);
+				Map<Language, String> labelsBorrowUserEntered = metadataBorrowUserEntered.getLabels();
+				Map<Language, String> labelsBorrowUser = metadataBorrowUser.getLabels();
+				metadataBorrowUser.setLabels(labelsBorrowUserEntered);
+				metadataBorrowUserEntered.setLabels(labelsBorrowUser);
+				types.getDefaultSchema(Folder.SCHEMA_TYPE).getMetadata(Folder.EXPECTED_DEPOSIT_DATE).addLabel(Language.French, "Date de versement prévue");
+				types.getDefaultSchema(Folder.SCHEMA_TYPE).getMetadata(Folder.EXPECTED_DESTRUCTION_DATE).addLabel(Language.French, "Date de destruction prévue");
+				types.getDefaultSchema(Folder.SCHEMA_TYPE).getMetadata(Folder.EXPECTED_TRANSFER_DATE).addLabel(Language.French, "Date de transfert prévue");
+				types.getDefaultSchema(ContainerRecord.SCHEMA_TYPE).create(ContainerRecord.ADMINISTRATIVE_UNIT).setType(MetadataValueType.REFERENCE)
+						.defineReferencesTo(types.getSchemaType(AdministrativeUnit.SCHEMA_TYPE));
 			}
 		});
+		appLayerFactory.getMetadataSchemasDisplayManager().saveMetadata(appLayerFactory.getMetadataSchemasDisplayManager().getMetadata(collection, ContainerRecord.DEFAULT_SCHEMA + "_" + ContainerRecord.ADMINISTRATIVE_UNIT)
+				.withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
+		appLayerFactory.getMetadataSchemasDisplayManager().saveSchema(appLayerFactory.getMetadataSchemasDisplayManager().getSchema(collection, ContainerRecord.DEFAULT_SCHEMA)
+				.withRemovedFormMetadatas(ContainerRecord.DEFAULT_SCHEMA + "_" + ContainerRecord.FILL_RATIO_ENTRED));
+		appLayerFactory.getMetadataSchemasDisplayManager().saveSchema(appLayerFactory.getMetadataSchemasDisplayManager().getSchema(collection, Task.DEFAULT_SCHEMA)
+				.withNewDisplayMetadataBefore(Task.DEFAULT_SCHEMA + "_" + Task.LINKED_CONTAINERS, Task.DEFAULT_SCHEMA + "_" + Task.LINKED_DOCUMENTS));
+		appLayerFactory.getMetadataSchemasDisplayManager().saveSchema(appLayerFactory.getMetadataSchemasDisplayManager().getSchema(collection, Task.DEFAULT_SCHEMA)
+				.withNewFormMetadatas(Task.DEFAULT_SCHEMA + "_" + Task.LINKED_CONTAINERS, Task.DEFAULT_SCHEMA + "_" + Task.REASON));
 	}
 
 	private void applySchemasDisplay2(String collection, SchemasDisplayManager manager) {
@@ -217,6 +242,17 @@ public class RMMigrationCombo implements ComboMigrationScript {
 				.setFieldDataStoreCode(rm.folder.folderType().getDataStoreCode()).setActive(false));
 		transaction.add(rm.newFacetField().setTitle(migrationResourcesProvider.getDefaultLanguageString("facets.documentType"))
 				.setFieldDataStoreCode(rm.documentDocumentType().getDataStoreCode()).setActive(false));
+
+		TasksSchemasRecordsServices taskSchemas = new TasksSchemasRecordsServices(collection, appLayerFactory);
+		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.BORROW_REQUEST).setTitle("Demande d'emprunt")
+				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + BorrowRequest.SCHEMA_NAME));
+		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.RETURN_REQUEST).setTitle("Demande de retour")
+				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + ReturnRequest.SCHEMA_NAME));
+		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.REACTIVATION_REQUEST).setTitle("Demande de réactivation")
+				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + ReactivationRequest.SCHEMA_NAME));
+		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.BORROW_EXTENSION_REQUEST)
+				.setTitle("Demande de prolongation d'emprunt")
+				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + ExtensionRequest.SCHEMA_NAME));
 
 		try {
 			transaction = createDefaultLabel(collection, appLayerFactory, migrationResourcesProvider, transaction);
@@ -344,6 +380,22 @@ public class RMMigrationCombo implements ComboMigrationScript {
 				RMEmailTemplateConstants.ALERT_AVAILABLE_ID);
 		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertWhenDecommissioningListCreatedTemplate.html",
 				RMEmailTemplateConstants.DECOMMISSIONING_LIST_CREATION_TEMPLATE_ID);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertBorrowedTemplate.html",
+				RMEmailTemplateConstants.ALERT_BORROWED_ACCEPTED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertBorrowedTemplateDenied.html",
+				RMEmailTemplateConstants.ALERT_BORROWED_DENIED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertBorrowingExtendedTemplate.html",
+				RMEmailTemplateConstants.ALERT_BORROWING_EXTENTED_ACCEPTED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertBorrowingExtendedTemplateDenied.html",
+				RMEmailTemplateConstants.ALERT_BORROWING_EXTENTED_DENIED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertReactivatedTemplate.html",
+				RMEmailTemplateConstants.ALERT_REACTIVATED_ACCEPTED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertReactivatedTemplateDenied.html",
+				RMEmailTemplateConstants.ALERT_REACTIVATED_DENIED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertReturnedTemplate.html",
+				RMEmailTemplateConstants.ALERT_RETURNED_ACCEPTED);
+		addEmailTemplates(appLayerFactory, migrationResourcesProvider, collection, "alertReturnedTemplateDenied.html",
+				RMEmailTemplateConstants.ALERT_RETURNED_DENIED);
 	}
 
 	private void addEmailTemplates(AppLayerFactory appLayerFactory, MigrationResourcesProvider migrationResourcesProvider,

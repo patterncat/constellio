@@ -1,22 +1,5 @@
 package com.constellio.app.services.migrations;
 
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.LocalDateTime;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import com.constellio.app.conf.PropertiesAppLayerConfiguration.InMemoryAppLayerConfiguration;
 import com.constellio.data.conf.IdGeneratorType;
 import com.constellio.data.conf.PropertiesDataLayerConfiguration.InMemoryDataLayerConfiguration;
@@ -32,8 +15,26 @@ import com.constellio.sdk.tests.ConstellioTest;
 import com.constellio.sdk.tests.DataLayerConfigurationAlteration;
 import com.constellio.sdk.tests.SolrSDKToolsServices;
 import com.constellio.sdk.tests.SolrSDKToolsServices.VaultSnapshot;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDateTime;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ComboMigrationsAcceptanceTest extends ConstellioTest {
+
+	private List<String> ignoredFiles = asList("roles.xml", "globalProperties");
 
 	@Rule
 	public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -354,6 +355,9 @@ public class ComboMigrationsAcceptanceTest extends ConstellioTest {
 				assertThat(linesOfComboMigrationFile).describedAs("Content of file '" + fileAbsolutePath + "")
 						.isEqualTo(linesOfMigrationFile);
 
+			} else if(ignoredFiles.contains(file)) {
+				System.out.println("WARNING: " + file1.getName() + " is ignored");
+				continue;
 			} else {
 
 				assertThat(contentOfComboMigrationFile).describedAs("Content of file '" + fileAbsolutePath + "")

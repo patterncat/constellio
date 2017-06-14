@@ -58,7 +58,7 @@ public class RMMigrationTo7_1 extends MigrationHelper implements MigrationScript
 	@Override
 	public void migrate(String collection, MigrationResourcesProvider provider, AppLayerFactory factory)
 			throws Exception {
-		SchemaAlterationsFor6_7 s = new SchemaAlterationsFor6_7(collection, provider, factory);
+		SchemaAlterationsFor7_1 s = new SchemaAlterationsFor7_1(collection, provider, factory);
 		s.migrate();
 		s.setupRoles(collection, factory.getModelLayerFactory().getRolesManager(), provider);
 		SchemasDisplayManager displayManager = factory.getMetadataSchemasDisplayManager();
@@ -151,9 +151,9 @@ public class RMMigrationTo7_1 extends MigrationHelper implements MigrationScript
 		return temp;
 	}
 
-	public static class SchemaAlterationsFor6_7 extends MetadataSchemasAlterationHelper {
+	public static class SchemaAlterationsFor7_1 extends MetadataSchemasAlterationHelper {
 
-		protected SchemaAlterationsFor6_7(String collection, MigrationResourcesProvider provider, AppLayerFactory factory) {
+		protected SchemaAlterationsFor7_1(String collection, MigrationResourcesProvider provider, AppLayerFactory factory) {
 			super(collection, provider, factory);
 		}
 

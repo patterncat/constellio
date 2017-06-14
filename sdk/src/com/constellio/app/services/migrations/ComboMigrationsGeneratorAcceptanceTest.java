@@ -116,7 +116,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(null))
 				.addMethod(generateDisplayConfigs(new ArrayList<String>()))
-				.addMethod(generateRoles(new ArrayList<Role>()))
+//				.addMethod(generateRoles(new ArrayList<Role>()))
 				.addMethod(generateConstructor())
 				.build();
 
@@ -233,7 +233,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(typesBefore))
 				.addMethod(generateDisplayConfigs(codesBefore))
-				.addMethod(generateRoles(rolesBefore))
+//				.addMethod(generateRoles(rolesBefore))
 				.addMethod(generateConstructor())
 				.build();
 
@@ -293,7 +293,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(typesBefore))
 				.addMethod(generateDisplayConfigs(codesBefore))
-				.addMethod(generateRoles(rolesBefore))
+//				.addMethod(generateRoles(rolesBefore))
 				.addMethod(generateConstructor())
 				.build();
 
@@ -301,10 +301,10 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				.addStaticImport(java.util.Arrays.class, "asList")
 				.addStaticImport(HashMapBuilder.class, "stringObjectMap")
 				.build();
-
+		String newFile = resolveProblems(file);
 		File dest = new File(getFoldersLocator().getAppProject()
 				+ "/src/com/constellio/app/modules/tasks/migrations/GeneratedTasksMigrationCombo.java");
-		FileUtils.writeStringToFile(dest, file.toString());
+		FileUtils.writeStringToFile(dest, newFile);
 	}
 
 	@Test

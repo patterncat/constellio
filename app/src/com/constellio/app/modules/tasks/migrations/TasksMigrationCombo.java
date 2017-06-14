@@ -1,19 +1,5 @@
 package com.constellio.app.modules.tasks.migrations;
 
-import static com.constellio.app.modules.tasks.model.wrappers.TaskStatusType.CLOSED;
-import static com.constellio.app.modules.tasks.model.wrappers.TaskStatusType.FINISHED;
-import static com.constellio.app.modules.tasks.model.wrappers.TaskStatusType.IN_PROGRESS;
-import static com.constellio.app.modules.tasks.model.wrappers.TaskStatusType.STANDBY;
-import static com.constellio.app.modules.tasks.model.wrappers.types.TaskStatus.CLOSED_CODE;
-import static com.constellio.app.modules.tasks.model.wrappers.types.TaskStatus.STANDBY_CODE;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.commons.io.IOUtils;
-
 import com.constellio.app.entities.modules.ComboMigrationScript;
 import com.constellio.app.entities.modules.MetadataSchemasAlterationHelper;
 import com.constellio.app.entities.modules.MigrationResourcesProvider;
@@ -28,6 +14,16 @@ import com.constellio.model.services.emails.EmailTemplatesManager;
 import com.constellio.model.services.factories.ModelLayerFactory;
 import com.constellio.model.services.records.RecordServices;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
+import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.constellio.app.modules.tasks.model.wrappers.TaskStatusType.*;
+import static com.constellio.app.modules.tasks.model.wrappers.types.TaskStatus.CLOSED_CODE;
+import static com.constellio.app.modules.tasks.model.wrappers.types.TaskStatus.STANDBY_CODE;
 
 public class TasksMigrationCombo implements ComboMigrationScript {
 	@Override
@@ -37,6 +33,9 @@ public class TasksMigrationCombo implements ComboMigrationScript {
 		scripts.add(new TasksMigrationTo5_1_2());
 		scripts.add(new TasksMigrationTo5_1_3());
 		scripts.add(new TasksMigrationTo6_0());
+		scripts.add(new TasksMigrationTo6_5_33());
+		scripts.add(new TasksMigrationTo7_0());
+		scripts.add(new TasksMigrationTo7_2());
 		return scripts;
 	}
 
@@ -55,7 +54,7 @@ public class TasksMigrationCombo implements ComboMigrationScript {
 				migrationResourcesProvider);
 
 		new SchemaAlteration(collection, migrationResourcesProvider, appLayerFactory).migrate();
-		generatedComboMigration.applyGeneratedRoles();
+//		generatedComboMigration.applyGeneratedRoles();
 		generatedComboMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 
 		RecordServices recordServices = appLayerFactory.getModelLayerFactory().newRecordServices();

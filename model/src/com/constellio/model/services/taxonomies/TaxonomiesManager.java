@@ -1,19 +1,5 @@
 package com.constellio.model.services.taxonomies;
 
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.from;
-import static java.util.Arrays.asList;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.jdom2.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.constellio.data.dao.managers.StatefulService;
 import com.constellio.data.dao.managers.config.ConfigManager;
 import com.constellio.data.dao.managers.config.DocumentAlteration;
@@ -44,6 +30,7 @@ import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
 import java.util.*;
 
 import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.from;
@@ -172,13 +159,13 @@ public class TaxonomiesManager implements StatefulService, OneXMLConfigPerCollec
 		}
 
 		MetadataSchemaTypes types = schemasManager.getSchemaTypes(taxonomy.getCollection());
-		for (MetadataSchemaType type : types.getSchemaTypes()) {
-			for (Metadata metadata : type.getAllReferencesToTaxonomySchemas(asList(taxonomy))) {
-				if (metadata.isMultivalue()) {
-					throw new TaxonomySchemaIsReferencedInMultivalueReference();
-				}
-			}
-		}
+//		for (MetadataSchemaType type : types.getSchemaTypes()) {
+//			for (Metadata metadata : type.getAllReferencesToTaxonomySchemas(asList(taxonomy))) {
+//				if (metadata.isMultivalue() ) {
+//					throw new TaxonomySchemaIsReferencedInMultivalueReference();
+//				}
+//			}
+//		}
 	}
 
 	public List<String> getSecondaryTaxonomySchemaTypes(String collection) {
