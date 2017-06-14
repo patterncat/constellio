@@ -11,8 +11,11 @@ import com.constellio.app.modules.es.connectors.spi.Connector;
 import com.constellio.app.modules.es.connectors.spi.ConnectorJob;
 import com.constellio.app.modules.es.model.connectors.ConnectorDocument;
 import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbFolder;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 
 public class SmbNewFolderRetrievalJob extends SmbConnectorJob {
@@ -38,11 +41,12 @@ public class SmbNewFolderRetrievalJob extends SmbConnectorJob {
 					fullFolder = jobParams.getSmbRecordService().newConnectorSmbFolder(url);
 				}
 				String parentId = jobParams.getConnector().getContext().getParentId(url);
-				if (parentId == null && jobParams.getParentUrl() != null) {
+				if (parentId == null && StringUtils.isNotEmpty(jobParams.getParentUrl())) {
 					ConnectorSmbFolder parentFolder = jobParams.getSmbRecordService().getFolder(jobParams.getParentUrl());
 					parentId = SmbRecordService.getSafeId(parentFolder);
-					if (parentId == null) {
+					if (parentId == null && !jobParams.getUpdater().recentlyUpdated(jobParams.getParentUrl())) {
 						//The cache should be empty too
+						this.connector.getLogger().info("Invalidate cache entry", "URL : " + jobParams.getParentUrl(), Collections.EMPTY_MAP);
 						jobParams.getConnector().getContext().delete(jobParams.getParentUrl());
 					}
 				}

@@ -79,7 +79,7 @@ public class SmbJobFactoryImpl implements SmbJobFactory {
 						SmbModificationIndicator shareIndicator = smbShareService.getModificationIndicator(url);
 						if (shareIndicator == null) {
 							job = new SmbDeleteJob(params);
-						} else if (contextIndicator.getParentId() == null || !contextIndicator.equals(shareIndicator)) {
+						} else if ((contextIndicator.getParentId() == null && !connectorInstance.getSeeds().contains(url)) || !contextIndicator.equals(shareIndicator)) {
 							job = new SmbNewFolderRetrievalJob(params);
 						} else {
 							//Misplaced

@@ -60,7 +60,7 @@ public class ConnectorSmb extends Connector {
 	static final String RESUME_OF_TRAVERSAL = "Resume of traversal";
 	static final String END_OF_TRAVERSAL = "End of traversal";
 
-	private static final int MAX_JOBS_PER_GET_JOBS_CALL = 500;
+	public static final int MAX_JOBS_PER_GET_JOBS_CALL = 500;
 
 	private ConnectorSmbInstance connectorInstance;
 	private ConnectorSmbUtils smbUtils;
@@ -236,9 +236,9 @@ public class ConnectorSmb extends Connector {
 		if (connectorInstance.isForceSyncTree()) {
 			try {
 				this.misplaced.clear();
-				this.misplaced.addAll(this.smbRecordService.duplicateDocuments());
+				this.misplaced.addAll(this.smbRecordService.misplacedUrls());
 				this.duplicateUrls.clear();
-				this.duplicateUrls.addAll(this.smbRecordService.misplacedUrls());
+				this.duplicateUrls.addAll(this.smbRecordService.duplicateDocuments());
 			} catch (Exception e) {
 				logger.errorUnexpected(e);
 			}
