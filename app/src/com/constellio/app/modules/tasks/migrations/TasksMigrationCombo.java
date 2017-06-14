@@ -54,7 +54,7 @@ public class TasksMigrationCombo implements ComboMigrationScript {
 				migrationResourcesProvider);
 
 		new SchemaAlteration(collection, migrationResourcesProvider, appLayerFactory).migrate();
-//		generatedComboMigration.applyGeneratedRoles();
+		generatedComboMigration.applyGeneratedRoles();
 		generatedComboMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 
 		RecordServices recordServices = appLayerFactory.getModelLayerFactory().newRecordServices();

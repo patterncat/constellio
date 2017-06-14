@@ -1171,4 +1171,9 @@ public final class GeneratedTasksMigrationCombo {
     transaction.add(manager.getMetadata(collection, "userTask_default_type").withMetadataGroup("").withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     manager.execute(transaction.build());
   }
+
+  public void applyGeneratedRoles() {
+    RolesManager rolesManager = appLayerFactory.getModelLayerFactory().getRolesManager();;
+    rolesManager.updateRole(rolesManager.getRole(collection, "ADM").withNewPermissions(asList("core.deleteContentVersion", "core.ldapConfigurationManagement", "core.manageConnectors", "core.manageEmailServer", "core.manageFacets", "core.manageLabels", "core.manageMetadataExtractor", "core.manageMetadataSchemas", "core.manageSearchBoost", "core.manageSearchEngine", "core.manageSearchReports", "core.manageSecurity", "core.manageSystemCollections", "core.manageSystemConfiguration", "core.manageSystemDataImports", "core.manageSystemGroups", "core.manageSystemModules", "core.manageSystemServers", "core.manageSystemUpdates", "core.manageSystemUsers", "core.manageTaxonomies", "core.manageTrash", "core.manageValueList", "core.useExternalAPIS", "core.viewEvents", "core.viewSystemBatchProcesses", "tasks.manageWorkflows", "tasks.startWorkflows")));
+  }
 }

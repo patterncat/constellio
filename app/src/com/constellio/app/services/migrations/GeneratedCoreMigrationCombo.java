@@ -1,10 +1,17 @@
 package com.constellio.app.services.migrations;
 
-import com.constellio.app.entities.modules.MigrationResourcesProvider;
+import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.entities.schemasDisplay.SchemaTypesDisplayConfig;
+import com.constellio.model.entities.schemas.MetadataTransiency;
+import com.constellio.model.entities.schemas.MetadataValueType;
+import com.constellio.model.services.security.roles.RolesManager;
+import java.util.ArrayList;
+import static com.constellio.data.utils.HashMapBuilder.stringObjectMap;
+import static java.util.Arrays.asList;
+
+import com.constellio.app.entities.modules.MigrationResourcesProvider;
 import com.constellio.app.entities.schemasDisplay.enums.MetadataInputType;
 import com.constellio.app.services.factories.AppLayerFactory;
-import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
 import com.constellio.app.ui.pages.search.criteria.CriterionFactory;
 import com.constellio.app.ui.pages.search.criteria.FacetSelectionsFactory;
@@ -13,7 +20,7 @@ import com.constellio.model.entities.records.wrappers.SavedSearch;
 import com.constellio.model.entities.records.wrappers.structure.FacetOrderType;
 import com.constellio.model.entities.records.wrappers.structure.FacetType;
 import com.constellio.model.entities.records.wrappers.structure.ReportedMetadataFactory;
-import com.constellio.model.entities.schemas.MetadataValueType;
+import com.constellio.model.entities.security.Role;
 import com.constellio.model.entities.security.global.UserCredentialStatus;
 import com.constellio.model.entities.structures.EmailAddressFactory;
 import com.constellio.model.entities.structures.MapStringListStringStructureFactory;
@@ -23,12 +30,24 @@ import com.constellio.model.services.schemas.builders.MetadataBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypeBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
-import com.constellio.model.services.schemas.calculators.*;
+import com.constellio.model.services.schemas.calculators.AllAuthorizationsCalculator;
+import com.constellio.model.services.schemas.calculators.AllReferencesCalculator;
+import com.constellio.model.services.schemas.calculators.AllRemovedAuthsCalculator;
+import com.constellio.model.services.schemas.calculators.AllUserAuthorizationsCalculator;
+import com.constellio.model.services.schemas.calculators.AttachedAncestorsCalculator;
+import com.constellio.model.services.schemas.calculators.AutocompleteFieldCalculator;
+import com.constellio.model.services.schemas.calculators.InheritedAuthorizationsCalculator;
+import com.constellio.model.services.schemas.calculators.ParentPathCalculator;
+import com.constellio.model.services.schemas.calculators.PathCalculator;
+import com.constellio.model.services.schemas.calculators.PathPartsCalculator;
+import com.constellio.model.services.schemas.calculators.PrincipalPathCalculator;
+import com.constellio.model.services.schemas.calculators.RolesCalculator;
+import com.constellio.model.services.schemas.calculators.TokensCalculator2;
+import com.constellio.model.services.schemas.calculators.UserTokensCalculator2;
 import com.constellio.model.services.schemas.validators.DecisionValidator;
 import com.constellio.model.services.schemas.validators.EmailValidator;
 import com.constellio.model.services.schemas.validators.ManualTokenValidator;
-
-import static java.util.Arrays.asList;
+import java.lang.String;
 
 public final class GeneratedCoreMigrationCombo {
   String collection;
@@ -2525,5 +2544,10 @@ public final class GeneratedCoreMigrationCombo {
     transaction.add(manager.getSchema(collection, "user_default").withFormMetadataCodes(asList("user_default_defaultTabInFolderDisplay", "user_default_defaultTaxonomy", "user_default_email", "user_default_firstname", "user_default_groups", "user_default_jobTitle", "user_default_lastname", "user_default_loginLanguageCode", "user_default_phone", "user_default_startTab", "user_default_status", "user_default_username", "user_default_userroles", "user_default_collectionDeleteAccess", "user_default_collectionReadAccess", "user_default_collectionWriteAccess", "user_default_systemAdmin", "user_default_signature")).withDisplayMetadataCodes(asList("user_default_username", "user_default_firstname", "user_default_lastname", "user_default_title", "user_default_email", "user_default_userroles", "user_default_groups", "user_default_jobTitle", "user_default_phone", "user_default_status", "user_default_createdOn", "user_default_modifiedOn", "user_default_allroles")).withSearchResultsMetadataCodes(asList("user_default_title", "user_default_modifiedOn")).withTableMetadataCodes(asList("user_default_title", "user_default_modifiedOn")));
     transaction.add(manager.getMetadata(collection, "user_default_personalEmails").withMetadataGroup("").withInputType(MetadataInputType.TEXTAREA).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(false));
     manager.execute(transaction.build());
+  }
+
+  public void applyGeneratedRoles() {
+    RolesManager rolesManager = appLayerFactory.getModelLayerFactory().getRolesManager();;
+    rolesManager.addRole(new Role(collection, "ADM", "Administrateur", asList("core.deleteContentVersion", "core.ldapConfigurationManagement", "core.manageConnectors", "core.manageEmailServer", "core.manageFacets", "core.manageLabels", "core.manageMetadataExtractor", "core.manageMetadataSchemas", "core.manageSearchBoost", "core.manageSearchEngine", "core.manageSearchReports", "core.manageSecurity", "core.manageSystemCollections", "core.manageSystemConfiguration", "core.manageSystemDataImports", "core.manageSystemGroups", "core.manageSystemModules", "core.manageSystemServers", "core.manageSystemUpdates", "core.manageSystemUsers", "core.manageTaxonomies", "core.manageTrash", "core.manageValueList", "core.useExternalAPIS", "core.viewEvents", "core.viewSystemBatchProcesses")));
   }
 }

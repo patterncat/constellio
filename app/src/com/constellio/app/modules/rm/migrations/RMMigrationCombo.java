@@ -126,7 +126,7 @@ public class RMMigrationCombo implements ComboMigrationScript {
 				migrationResourcesProvider);
 
 		new SchemaAlteration(collection, migrationResourcesProvider, appLayerFactory).migrate();
-//		generatedComboMigration.applyGeneratedRoles();
+		generatedComboMigration.applyGeneratedRoles();
 		generatedComboMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		applySchemasDisplay2(collection, appLayerFactory.getMetadataSchemasDisplayManager());
 

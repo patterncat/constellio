@@ -116,7 +116,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(null))
 				.addMethod(generateDisplayConfigs(new ArrayList<String>()))
-//				.addMethod(generateRoles(new ArrayList<Role>()))
+				.addMethod(generateRoles(new ArrayList<Role>()))
 				.addMethod(generateConstructor())
 				.build();
 
@@ -166,7 +166,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				.addField(String.class, "collection")
 				.addField(AppLayerFactory.class, "appLayerFactory")
 				.addField(MigrationResourcesProvider.class, "resourcesProvider")
-				//.addMethod(generateRecords())
+				//.addMethod(generateRecords())c
 				.addMethod(generateTypes(null))
 				.addMethod(generateDisplayConfigs(new ArrayList<String>()))
 				.addMethod(generateRoles(new ArrayList<Role>()))
@@ -233,7 +233,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(typesBefore))
 				.addMethod(generateDisplayConfigs(codesBefore))
-//				.addMethod(generateRoles(rolesBefore))
+				.addMethod(generateRoles(rolesBefore))
 				.addMethod(generateConstructor())
 				.build();
 
@@ -293,7 +293,7 @@ public class ComboMigrationsGeneratorAcceptanceTest extends ConstellioTest {
 				//.addMethod(generateRecords())
 				.addMethod(generateTypes(typesBefore))
 				.addMethod(generateDisplayConfigs(codesBefore))
-//				.addMethod(generateRoles(rolesBefore))
+				.addMethod(generateRoles(rolesBefore))
 				.addMethod(generateConstructor())
 				.build();
 

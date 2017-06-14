@@ -92,7 +92,7 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 			generatedSystemMigrationCombo.applyGeneratedRoles();
 			generatedSystemMigrationCombo.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		} else {
-//			generatedFastCoreMigration.applyGeneratedRoles();
+			generatedFastCoreMigration.applyGeneratedRoles();
 			generatedFastCoreMigration.applySchemasDisplay(appLayerFactory.getMetadataSchemasDisplayManager());
 		}
 		applySchemasDisplay2(collection, appLayerFactory.getMetadataSchemasDisplayManager());
