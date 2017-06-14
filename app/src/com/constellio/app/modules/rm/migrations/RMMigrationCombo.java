@@ -243,6 +243,12 @@ public class RMMigrationCombo implements ComboMigrationScript {
 		transaction.add(rm.newFacetField().setTitle(migrationResourcesProvider.getDefaultLanguageString("facets.documentType"))
 				.setFieldDataStoreCode(rm.documentDocumentType().getDataStoreCode()).setActive(false));
 
+		try {
+			transaction = createDefaultLabel(collection, appLayerFactory, migrationResourcesProvider, transaction);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
 		TasksSchemasRecordsServices taskSchemas = new TasksSchemasRecordsServices(collection, appLayerFactory);
 		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.BORROW_REQUEST).setTitle("Demande d'emprunt")
 				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + BorrowRequest.SCHEMA_NAME));
@@ -253,12 +259,6 @@ public class RMMigrationCombo implements ComboMigrationScript {
 		transaction.add(taskSchemas.newTaskType().setCode(RMTaskType.BORROW_EXTENSION_REQUEST)
 				.setTitle("Demande de prolongation d'emprunt")
 				.setLinkedSchema(Task.SCHEMA_TYPE + "_" + ExtensionRequest.SCHEMA_NAME));
-
-		try {
-			transaction = createDefaultLabel(collection, appLayerFactory, migrationResourcesProvider, transaction);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 
 		return transaction;
 	}
@@ -299,7 +299,7 @@ public class RMMigrationCombo implements ComboMigrationScript {
 			String extension = provider.getDefaultLanguageString("Migration.fileExtension");
 			titre += " (" + etiquetteName + " " + format + ")";
 			record.set(typeBuilder.getMetadata(PrintableLabel.COLONNE), 2);
-			record.set(typeBuilder.getMetadata(Printable.ISDELETABLE), false);
+			record.set(typeBuilder.getMetadata(Printable.ISDELETABLE), true);
 			ContentVersionDataSummary upload = contentManager.upload(new FileInputStream(fi), etiquetteName + " " + format + " " + type).getContentVersionDataSummary();
 			record.set(typeBuilder.getMetadata(Report.TITLE), titre);
 			record.set(typeBuilder.getMetadata(Printable.JASPERFILE), contentManager.createFileSystem(etiquetteName + "-" + format + "-" + type + extension, upload));
