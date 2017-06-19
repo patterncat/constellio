@@ -29,19 +29,27 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
     private final SmbModificationIndicator shareIndicator;
 
     private SmbModificationIndicator getSmbModificationIndicatorFromDatabase(ConnectorSmbDocument fullDocument) {
+        long millis = -1;
+        if (fullDocument.getLastModified() != null) {
+            millis = fullDocument.getLastModified().toDateTime().getMillis();
+        }
         SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(
                 fullDocument.getPermissionsHash(),
                 fullDocument.getSize(),
-                fullDocument.getLastModified().toDateTime().getMillis()
+                millis
         );
         return databaseIndicator;
     }
 
     private SmbModificationIndicator getSmbModificationIndicatorFromDatabase(ConnectorSmbFolder fullDocument) {
+        long millis = -1;
+        if (fullDocument.getLastModified() != null) {
+            millis = fullDocument.getLastModified().toDateTime().getMillis();
+        }
         SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(
                 "",
                 0,
-                fullDocument.getLastModified().toDateTime().getMillis()
+                millis
         );
         return databaseIndicator;
     }
@@ -136,7 +144,11 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
             case FAILED_DTO:
                 try {
                     if (connectorDocument == null) {
-                        connectorDocument = jobParams.getSmbRecordService().newConnectorSmbDocument(url);
+                        if (folder) {
+                            connectorDocument = jobParams.getSmbRecordService().newConnectorSmbFolder(url);
+                        } else {
+                            connectorDocument = jobParams.getSmbRecordService().newConnectorSmbDocument(url);
+                        }
                     }
                     parentId = getParentId();
                     jobParams.getUpdater().updateFailedDocumentOrFolder(smbFileDTO, connectorDocument, parentId);
