@@ -1,6 +1,5 @@
 package com.constellio.app.modules.es.connectors.smb;
 
-import com.constellio.app.modules.es.connectors.http.ConnectorHttpContext;
 import com.constellio.app.modules.es.connectors.smb.ConnectorSmbRuntimeException.ConnectorSmbRuntimeException_CannotDelete;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContextServices;
@@ -77,7 +76,6 @@ public class ConnectorSmb extends Connector {
 	private SmbConnectorContextServices contextServices;
 
 	private final Set<String> duplicateUrls = new ConcurrentSkipListSet<>();
-	private final Set<String> misplaced = new ConcurrentSkipListSet<>();
 
 	private DateTime lastSave;
 
@@ -116,10 +114,6 @@ public class ConnectorSmb extends Connector {
 
 		smbJobFactory = new SmbJobFactoryImpl(this, connectorInstance, eventObserver, smbShareService, smbUtils, smbRecordService,
 				updater);
-	}
-
-	public Set<String> getMisplaced() {
-		return misplaced;
 	}
 
 	public Set<String> getDuplicateUrls() {
@@ -233,15 +227,11 @@ public class ConnectorSmb extends Connector {
 	}
 
 	private void cleanupInconsistencies() {
-		if (connectorInstance.isForceSyncTree()) {
-			try {
-				this.misplaced.clear();
-				this.misplaced.addAll(this.smbRecordService.misplacedUrls());
-				this.duplicateUrls.clear();
-				this.duplicateUrls.addAll(this.smbRecordService.duplicateDocuments());
-			} catch (Exception e) {
-				logger.errorUnexpected(e);
-			}
+        try {
+			this.duplicateUrls.clear();
+			this.duplicateUrls.addAll(this.smbRecordService.duplicateDocuments());
+		} catch (Exception e) {
+			logger.errorUnexpected(e);
 		}
 	}
 

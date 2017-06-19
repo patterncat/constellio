@@ -34,10 +34,6 @@ public class SmbDocumentOrFolderUpdater {
 		lastDocuments = Queues.synchronizedQueue(EvictingQueue.create(ConnectorSmb.MAX_JOBS_PER_GET_JOBS_CALL));
 	}
 
-	public void updateDocumentOrFolder(SmbFileDTO smbFileDTO, ConnectorDocument<?> documentOrFolder, String parentId) {
-		updateDocumentOrFolder(smbFileDTO, documentOrFolder, parentId, false);
-	}
-
 	public void updateDocumentOrFolder(SmbFileDTO smbFileDTO, ConnectorDocument<?> documentOrFolder, String parentId, boolean seed) {
 		lastDocuments.add(smbFileDTO.getUrl());
 		ConnectorSmbDocument smbDocument = smbRecordService.convertToSmbDocumentOrNull(documentOrFolder);

@@ -110,10 +110,6 @@ public class ConnectorSmbInstance extends ConnectorInstance<ConnectorSmbInstance
 		return this;
 	}
 
-	public boolean isForceSyncTree() {
-		return getBooleanWithDefaultValue(FORCE_SYNC_TREE, false);
-	}
-
 	public ConnectorSmbInstance setForceSyncTree(boolean forceSyncTree) {
 		set(FORCE_SYNC_TREE, forceSyncTree);
 		return this;

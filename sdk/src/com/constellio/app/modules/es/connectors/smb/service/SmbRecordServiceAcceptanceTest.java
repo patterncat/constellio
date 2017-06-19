@@ -185,27 +185,6 @@ public class SmbRecordServiceAcceptanceTest extends ConstellioTest {
 	}
 
 	@Test
-	public void givenMisplacedFoldersThenGetMisplaced()
-			throws RecordServicesException {
-		SmbRecordService smbRecordService = new SmbRecordService(es, connectorInstance);
-
-		ConnectorSmbFolder folder = es.newConnectorSmbFolder(connectorInstance)
-				.setUrl(SmbTestParams.EXISTING_SHARE + "/test/");
-
-		ConnectorSmbFolder folder2 = es.newConnectorSmbFolder(connectorInstance)
-				.setUrl(SmbTestParams.EXISTING_SHARE);
-
-		recordService.add(folder);
-		recordService.add(folder2);
-		recordService.flush();
-
-		assertThat(smbRecordService.getFolders(SmbTestParams.EXISTING_SHARE + "/test/")).hasSize(1);
-
-		Set<String> urls = smbRecordService.misplacedUrls();
-		assertThat(urls).containsExactly(SmbTestParams.EXISTING_SHARE + "/test/");
-	}
-
-	@Test
 	public void givenFoldersThenPathOk()
 			throws RecordServicesException {
 		SmbRecordService smbRecordService = new SmbRecordService(es, connectorInstance);

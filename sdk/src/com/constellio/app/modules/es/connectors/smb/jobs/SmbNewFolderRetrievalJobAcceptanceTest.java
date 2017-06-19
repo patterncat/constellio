@@ -8,6 +8,7 @@ import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactory;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl;
 import com.constellio.app.modules.es.connectors.smb.service.SmbFileDTO;
 import com.constellio.app.modules.es.connectors.smb.service.SmbFileDTO.SmbFileDTOStatus;
+import com.constellio.app.modules.es.connectors.smb.service.SmbModificationIndicator;
 import com.constellio.app.modules.es.connectors.smb.service.SmbRecordService;
 import com.constellio.app.modules.es.connectors.smb.service.SmbShareService;
 import com.constellio.app.modules.es.connectors.smb.testutils.FakeSmbService;
@@ -45,7 +46,7 @@ public class SmbNewFolderRetrievalJobAcceptanceTest extends ConstellioTest {
 	private TestConnectorEventObserver eventObserver;
 	private SmbRecordService smbRecordService;
 	private SmbDocumentOrFolderUpdater updater;
-	private SmbNewFolderRetrievalJob retrievalJob;
+	private SmbNewRetrievalJob retrievalJob;
 	private ConnectorSmbUtils smbUtils;
 	private SmbJobFactory jobFactory;
 	@Mock private SmbConnectorContext context;
@@ -95,14 +96,14 @@ public class SmbNewFolderRetrievalJobAcceptanceTest extends ConstellioTest {
 		smbService = new FakeSmbService(smbFileDTO);
 
 		JobParams jobParams = new JobParams(connector, eventObserver,smbUtils, connectorInstance, smbService,smbRecordService, updater, jobFactory, SHARE_URL, null);
-		retrievalJob = new SmbNewFolderRetrievalJob(jobParams);
+		retrievalJob = new SmbNewRetrievalJob(jobParams, mock(SmbModificationIndicator.class), true);
 		retrievalJob.execute(connector);
 
 		assertThatEventsObservedBy(eventObserver).comparingRecordsUsing(es.connectorSmbFolder.url())
 				.containsOnly(addEvent(es.newConnectorSmbFolder(connectorInstance)
 						.setUrl(SHARE_URL)));
 
-		verify(updater, times(1)).updateDocumentOrFolder(any(SmbFileDTO.class), any(ConnectorDocument.class), anyString());
+		verify(updater, times(1)).updateDocumentOrFolder(any(SmbFileDTO.class), any(ConnectorDocument.class), anyString(), anyBoolean());
 		verify(smbRecordService, times(1)).getFolder(SHARE_URL);
 		verify(smbRecordService, times(1)).updateResumeUrl(SHARE_URL);
 	}
@@ -116,7 +117,7 @@ public class SmbNewFolderRetrievalJobAcceptanceTest extends ConstellioTest {
 		smbService = new FakeSmbService(smbFileDTO);
 
 		JobParams jobParams = new JobParams(connector, eventObserver,smbUtils, connectorInstance, smbService,smbRecordService, updater, jobFactory, SHARE_URL, null);
-		retrievalJob = new SmbNewFolderRetrievalJob(jobParams);
+		retrievalJob = new SmbNewRetrievalJob(jobParams, mock(SmbModificationIndicator.class), true);
 		retrievalJob.execute(connector);
 
 		assertThatEventsObservedBy(eventObserver).comparingRecordsUsing(es.connectorSmbFolder.url())
@@ -136,7 +137,7 @@ public class SmbNewFolderRetrievalJobAcceptanceTest extends ConstellioTest {
 		smbService = new FakeSmbService(smbFileDTO);
 
 		JobParams jobParams = new JobParams(connector, eventObserver,smbUtils, connectorInstance, smbService,smbRecordService, updater, jobFactory, SHARE_URL, null);
-		retrievalJob = new SmbNewFolderRetrievalJob(jobParams);
+		retrievalJob = new SmbNewRetrievalJob(jobParams, mock(SmbModificationIndicator.class), true);
 		retrievalJob.execute(connector);
 
 		verify(connector, times(1)).queueJob(any(SmbDeleteJob.class));

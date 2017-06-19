@@ -1,6 +1,5 @@
 package com.constellio.app.modules.es.connectors.smb.service;
 
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.from;
 import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.where;
 
 import java.util.*;
@@ -8,12 +7,9 @@ import java.util.*;
 import com.constellio.app.modules.es.constants.ESTaxonomies;
 import com.constellio.data.dao.dto.records.FacetValue;
 import com.constellio.model.entities.records.Record;
-import com.constellio.model.entities.schemas.Metadata;
 import com.constellio.model.services.search.SPEQueryResponse;
 import com.constellio.model.services.search.query.ReturnedMetadatasFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.solr.common.params.ModifiableSolrParams;
-import org.joda.time.LocalDateTime;
 
 import com.constellio.app.modules.es.connectors.smb.utils.ConnectorSmbUtils;
 import com.constellio.app.modules.es.model.connectors.ConnectorDocument;
@@ -89,34 +85,6 @@ public class SmbRecordService {
 	public synchronized ConnectorSmbFolder newConnectorSmbFolder(String url) {
 		ConnectorSmbFolder folder = es.newConnectorSmbFolder(connectorInstance);
 		return folder;
-	}
-
-	public List<String> getRecordsWithDifferentTraversalCode() {
-		List<String> recordsToDelete = new ArrayList<>();
-
-		for (Iterator<String> documentIterator = getDocumentUrlsToDelete(); documentIterator.hasNext(); ) {
-			recordsToDelete.add(documentIterator.next());
-		}
-
-		for (Iterator<String> folderIterator = getFolderUrlsToDelete(); folderIterator.hasNext(); ) {
-			recordsToDelete.add(folderIterator.next());
-		}
-
-		return recordsToDelete;
-	}
-
-	private Iterator<String> getDocumentUrlsToDelete() {
-		return es.getUrlsIterator(new LogicalSearchQuery(es.fromConnectorSmbDocumentWhereConnectorIs(connectorInstance)
-				.andWhere(es.connectorDocument.traversalCode())
-				.isNotEqual(connectorInstance.getTraversalCode())));
-
-	}
-
-	private Iterator<String> getFolderUrlsToDelete() {
-		return es.getUrlsIterator(new LogicalSearchQuery(from(es.connectorSmbDocument.schemaType())
-				.where(es.fromConnectorSmbFolderWhereConnectorIs(connectorInstance)
-						.andWhere(es.connectorDocument.traversalCode())
-						.isNotEqual(connectorInstance.getTraversalCode()))));
 	}
 
 	public ConnectorSmbFolder getFolder(String url) {

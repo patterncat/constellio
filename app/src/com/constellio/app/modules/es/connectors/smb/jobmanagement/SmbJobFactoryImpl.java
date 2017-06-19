@@ -61,68 +61,27 @@ public class SmbJobFactoryImpl implements SmbJobFactory {
 				job = new SmbDispatchJob(params);
 				break;
 			case RETRIEVAL:
+				//Duplicates
+				if (this.connector.getDuplicateUrls().contains(url)) {
+					job = new SmbDeleteJob(params);
+					break;
+				}
+
 				SmbConnectorContext context = this.connector.getContext();
 				SmbModificationIndicator contextIndicator = context.getModificationIndicator(url);
+				SmbModificationIndicator shareIndicator = smbShareService.getModificationIndicator(url);
 
-				if (smbUtils.isFolder(url)) {
-					if (contextIndicator == null) {
-						job = new SmbNewFolderRetrievalJob(params);
-					} else {
-						//Duplicates
-						if (connectorInstance.isForceSyncTree() && this.connector.getDuplicateUrls().contains(url)) {
-							if (params.getSmbRecordService().getFolders(url).size() > 1) {
-								System.out.println("#Duplicate folder found, deleting : " + url);
-								job = new SmbDeleteJob(params);
-								break;
-							}
-						}
-						SmbModificationIndicator shareIndicator = smbShareService.getModificationIndicator(url);
-						if (shareIndicator == null) {
-							job = new SmbDeleteJob(params);
-						} else if ((contextIndicator.getParentId() == null && !connectorInstance.getSeeds().contains(url)) || !contextIndicator.equals(shareIndicator)) {
-							job = new SmbNewFolderRetrievalJob(params);
-						} else {
-							//Misplaced
-							if (connectorInstance.isForceSyncTree() && this.connector.getMisplaced().contains(url)) {
-								ConnectorSmbFolder parentFolder = params.getSmbRecordService().getFolder(params.getParentUrl());
-								String parentId = SmbRecordService.getSafeId(parentFolder);
-								if (!StringUtils.equals(parentId, contextIndicator.getParentId())) {
-									System.out.println("#Misplaced folder found, fixing : " + url);
-									job = new SmbNewFolderRetrievalJob(params);
-								}
-							}
-						}
-					}
+				if (shareIndicator == null) {
+					job = new SmbDeleteJob(params);
+				} else if (contextIndicator == null ||
+						(contextIndicator.getParentId() == null && !connectorInstance.getSeeds().contains(url))) {
+					job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
 				} else {
-					if (contextIndicator == null) {
-						job = new SmbNewDocumentRetrievalJob(params);
-					} else {
-						//Duplicates
-						if (connectorInstance.isForceSyncTree() && this.connector.getDuplicateUrls().contains(url)) {
-							if (params.getSmbRecordService().getDocuments(url).size() > 1) {
-								System.out.println("#Duplicate document found, deleting : " + url);
-								job = new SmbDeleteJob(params);
-								break;
-							}
-						}
-						SmbModificationIndicator shareIndicator = smbShareService.getModificationIndicator(url);
-						if (shareIndicator == null) {
-							//Multiple urls in database or no documents on share
-							job = new SmbDeleteJob(params);
-						} else if (contextIndicator.getParentId() == null || !contextIndicator.equals(shareIndicator)) {
-							//Misplaced document or document modified
-							job = new SmbNewDocumentRetrievalJob(params);
-						} else {
-							//Misplaced
-							if (connectorInstance.isForceSyncTree() && this.connector.getMisplaced().contains(url)) {
-								ConnectorSmbFolder parentFolder = params.getSmbRecordService().getFolder(params.getParentUrl());
-								String parentId = SmbRecordService.getSafeId(parentFolder);
-								if (!StringUtils.equals(parentId, contextIndicator.getParentId())) {
-									System.out.println("#Misplaced document found, fixing : " + url);
-									job = new SmbNewDocumentRetrievalJob(params);
-								}
-							}
-						}
+					boolean folder = smbUtils.isFolder(url);
+					if (folder && contextIndicator.getLastModified() != shareIndicator.getLastModified()) {
+						job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
+					} else if (!folder && !contextIndicator.equals(shareIndicator)) {
+						job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
 					}
 				}
 				if (job instanceof SmbNullJob) {
