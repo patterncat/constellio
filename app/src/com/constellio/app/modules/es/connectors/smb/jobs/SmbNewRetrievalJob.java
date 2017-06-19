@@ -1,6 +1,7 @@
 package com.constellio.app.modules.es.connectors.smb.jobs;
 
 import com.constellio.app.modules.es.connectors.smb.ConnectorSmb;
+import com.constellio.app.modules.es.connectors.smb.cache.ContextUtils;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbConnectorJob;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl.SmbJobCategory;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl.SmbJobType;
@@ -28,28 +29,28 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
     private final JobParams jobParams;
     private final SmbModificationIndicator shareIndicator;
 
-    private SmbModificationIndicator getSmbModificationIndicatorFromDatabase(ConnectorSmbDocument fullDocument) {
+    private long getLastModified(ConnectorDocument connectorDocument) {
         long millis = -1;
-        if (fullDocument.getLastModified() != null) {
-            millis = fullDocument.getLastModified().toDateTime().getMillis();
+        if (connectorDocument.getLastModified() != null) {
+            millis = connectorDocument.getLastModified().toDateTime().getMillis();
         }
+        return millis;
+    }
+
+    private SmbModificationIndicator getSmbModificationIndicatorFromDatabase(ConnectorSmbDocument fullDocument) {
         SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(
                 fullDocument.getPermissionsHash(),
                 fullDocument.getSize(),
-                millis
+                getLastModified(fullDocument)
         );
         return databaseIndicator;
     }
 
     private SmbModificationIndicator getSmbModificationIndicatorFromDatabase(ConnectorSmbFolder fullDocument) {
-        long millis = -1;
-        if (fullDocument.getLastModified() != null) {
-            millis = fullDocument.getLastModified().toDateTime().getMillis();
-        }
         SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(
                 "",
                 0,
-                millis
+                getLastModified(fullDocument)
         );
         return databaseIndicator;
     }
@@ -57,16 +58,7 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
     private boolean updateConnectorContext(SmbModificationIndicator databaseIndicator, String parentId) {
         jobParams.getConnector().getContext().traverseModified(jobParams.getUrl(), databaseIndicator, parentId, jobParams.getConnectorInstance().getTraversalCode());
         boolean folder = jobParams.getSmbUtils().isFolder(jobParams.getUrl());
-        if (folder) {
-            if (shareIndicator.getLastModified() == databaseIndicator.getLastModified()) {
-                return false;
-            }
-        } else {
-            if (shareIndicator.equals(databaseIndicator)) {
-                return false;
-            }
-        }
-        return true;
+        return !ContextUtils.equals(shareIndicator, databaseIndicator, folder);
     }
 
     private String getParentId() {

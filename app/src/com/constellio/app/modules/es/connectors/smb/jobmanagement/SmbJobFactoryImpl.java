@@ -1,6 +1,7 @@
 package com.constellio.app.modules.es.connectors.smb.jobmanagement;
 
 import com.constellio.app.modules.es.connectors.smb.ConnectorSmb;
+import com.constellio.app.modules.es.connectors.smb.cache.ContextUtils;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
 import com.constellio.app.modules.es.connectors.smb.jobs.*;
 import com.constellio.app.modules.es.connectors.smb.service.SmbModificationIndicator;
@@ -78,9 +79,7 @@ public class SmbJobFactoryImpl implements SmbJobFactory {
 					job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
 				} else {
 					boolean folder = smbUtils.isFolder(url);
-					if (folder && contextIndicator.getLastModified() != shareIndicator.getLastModified()) {
-						job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
-					} else if (!folder && !contextIndicator.equals(shareIndicator)) {
+					if (!ContextUtils.equals(contextIndicator, shareIndicator, folder)) {
 						job = new SmbNewRetrievalJob(params, shareIndicator, smbUtils.isFolder(url));
 					}
 				}

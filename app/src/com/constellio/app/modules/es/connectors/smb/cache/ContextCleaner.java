@@ -37,11 +37,11 @@ public class ContextCleaner {
 			String url = databaseEntry.getKey();
 			SmbModificationIndicator databaseIndicator = databaseEntry.getValue();
 			SmbModificationIndicator contextIndicator = context.recordUrls.get(databaseEntry.getKey());
-			boolean folder = StringUtils.endsWith(url, "/");
-			if (folder && contextIndicator != null && contextIndicator.getLastModified() != databaseIndicator.getLastModified()) {
-				context.recordUrls.remove(url);
-			} else if (!folder && contextIndicator != null && !contextIndicator.equals(databaseIndicator)) {
-				context.recordUrls.remove(url);
+			if (contextIndicator != null) {
+				boolean folder = StringUtils.endsWith(url, "/");
+				if (!ContextUtils.equals(contextIndicator, databaseIndicator, folder)) {
+					context.recordUrls.remove(url);
+				}
 			}
 		}
 
@@ -87,6 +87,7 @@ public class ContextCleaner {
 		query.set("wt", "json");
 		query.set("fl", "url_s permissionsHash_s size_d lastModified_dt");
 		query.add("fq", "url_s:smb*");
+		//query.add("fq", "connectorId_s:00003398916");
 
 		QueryResponse response = SERVER.query(query);
 		SolrDocumentList results = response.getResults();
