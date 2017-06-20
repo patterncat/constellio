@@ -17,6 +17,7 @@ import com.constellio.app.modules.es.connectors.smb.utils.ConnectorSmbUtils;
 import com.constellio.app.modules.es.connectors.spi.ConnectorLogger;
 import com.constellio.app.modules.es.connectors.spi.ConsoleConnectorLogger;
 import com.constellio.app.modules.es.model.connectors.ConnectorDocument;
+import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbDocument;
 import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbInstance;
 import com.constellio.app.modules.es.sdk.TestConnectorEventObserver;
 import com.constellio.app.modules.es.services.ESSchemasRecordsServices;
@@ -36,6 +37,7 @@ import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class SmbNewDocumentRetrievalJobAcceptanceTest extends ConstellioTest {
 	@Mock private ConnectorSmb connector;
@@ -140,6 +142,37 @@ public class SmbNewDocumentRetrievalJobAcceptanceTest extends ConstellioTest {
 		retrievalJob.execute(connector);
 
 		verify(connector, times(1)).queueJob(any(SmbDeleteJob.class));
+	}
+
+	@Test
+	public void givenUncachedDocumentWhenExecutingThenCacheUpdatedAfterDatabase() {
+		SmbFileDTO smbFileDTO = new SmbFileDTO();
+		smbFileDTO.setUrl(FILE_URL);
+		smbFileDTO.setIsFile(true);
+		smbFileDTO.setStatus(SmbFileDTOStatus.FULL_DTO);
+		smbService = new FakeSmbService(smbFileDTO);
+
+		SmbModificationIndicator shareModificationIndicator = new SmbModificationIndicator("xx", 30D, 10L);
+
+		SmbModificationIndicator smbModificationIndicator = connector.getContext().getModificationIndicator(FILE_URL);
+		assertThat(smbModificationIndicator).isNull();
+
+		JobParams jobParams = new JobParams(connector, eventObserver,smbUtils, connectorInstance, smbService,smbRecordService, updater, jobFactory, FILE_URL, null);
+		retrievalJob = new SmbNewRetrievalJob(jobParams,shareModificationIndicator, false);
+		retrievalJob.execute(connector);
+
+		verify(updater, times(1)).updateDocumentOrFolder(any(SmbFileDTO.class), any(ConnectorDocument.class), anyString(), anyBoolean());
+
+		smbModificationIndicator = connector.getContext().getModificationIndicator(FILE_URL);
+		assertThat(smbModificationIndicator).isNull();
+
+		when(smbRecordService.getDocument(FILE_URL)).thenReturn(mock(ConnectorSmbDocument.class));
+
+		retrievalJob = new SmbNewRetrievalJob(jobParams, shareModificationIndicator, false);
+		retrievalJob.execute(connector);
+
+		smbModificationIndicator = connector.getContext().getModificationIndicator(FILE_URL);
+		assertThat(smbModificationIndicator).isNotNull();
 	}
 
 	@After
