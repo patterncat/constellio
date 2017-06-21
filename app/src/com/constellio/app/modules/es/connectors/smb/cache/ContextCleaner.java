@@ -23,42 +23,54 @@ public class ContextCleaner {
 
 	public static void main(String[] args) throws Exception {
 
+		File rootFolder = new File("/opt/constellio/conf/settings/connectors/smb/");
+
 		String serverUrl = "http://localhost:8983/solr/records";
-		String fetcherUrls =  "/tmp/cacheReader/fetchedUrls.txt";
 
-		SmbConnectorContext context = read(new File(fetcherUrls));
-		System.out.println("Loaded cache size : " + context.recordUrls.size());
+		File[] connectorsRootFolder = rootFolder.listFiles();
+		for (File connectorFolder : connectorsRootFolder) {
+			try {
+				if (connectorFolder.isDirectory()) {
+					SmbConnectorContext context = read(new File(connectorFolder, "fetchedUrls.txt"));
+					System.out.println("Loaded cache size : " + context.recordUrls.size() + " for connectorId " + connectorFolder.getName());
 
-		SERVER = new HttpSolrServer(serverUrl);
-		load();
-		System.out.println("Loaded database size : " + MAP.size());
+					SERVER = new HttpSolrServer(serverUrl);
+					load(connectorFolder.getName());
+					System.out.println("Loaded database size : " + MAP.size());
 
-		for (Map.Entry<String, SmbModificationIndicator> databaseEntry : MAP.entrySet()) {
-			String url = databaseEntry.getKey();
-			SmbModificationIndicator databaseIndicator = databaseEntry.getValue();
-			SmbModificationIndicator contextIndicator = context.recordUrls.get(databaseEntry.getKey());
-			if (contextIndicator != null) {
-				boolean folder = StringUtils.endsWith(url, "/");
-				if (!ContextUtils.equals(contextIndicator, databaseIndicator, folder)) {
-					context.recordUrls.remove(url);
+					for (Map.Entry<String, SmbModificationIndicator> databaseEntry : MAP.entrySet()) {
+						String url = databaseEntry.getKey();
+						SmbModificationIndicator databaseIndicator = databaseEntry.getValue();
+						SmbModificationIndicator contextIndicator = context.recordUrls.get(databaseEntry.getKey());
+						if (contextIndicator != null) {
+							boolean folder = StringUtils.endsWith(url, "/");
+							if (folder && contextIndicator != null && contextIndicator.getLastModified() != databaseIndicator.getLastModified()) {
+								context.recordUrls.remove(url);
+							} else if (!folder && contextIndicator != null && !contextIndicator.equals(databaseIndicator)) {
+								context.recordUrls.remove(url);
+							}
+						}
+					}
+
+					System.out.println("New cleaned cache size : " + context.recordUrls.size());
+					File savedCache = new File(connectorFolder, "fetchedUrls_fixed.txt");
+					save(context, savedCache);
+
+					System.out.println("Saved to  : " + savedCache);
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
-
-		System.out.println("New cleaned cache size : " + context.recordUrls.size());
-		File savedCache = new File("/tmp/cacheReader/fetchedUrls_fixed.txt");
-		save(context, savedCache);
-
-		System.out.println("Saved to  : " + savedCache);
 	}
 
 	
-	private static void load() throws Exception {
+	private static void load(String connectorId) throws Exception {
 		int start = 0;
 		boolean foundResult;
 		do {
 			foundResult = false;
-			SolrDocumentList results = query(start);
+			SolrDocumentList results = query(connectorId, start);
 			for (SolrDocument solrDocument : results) {
 				foundResult = true;
 				start++;
@@ -78,7 +90,7 @@ public class ContextCleaner {
 		} while (foundResult);
 	}
 
-	private static SolrDocumentList query(int start) throws Exception {
+	private static SolrDocumentList query(String connectorId, int start) throws Exception {
 		SolrQuery query = new SolrQuery();
 		query.set("start", start);
 		query.set("q", "*:*");
@@ -87,7 +99,7 @@ public class ContextCleaner {
 		query.set("wt", "json");
 		query.set("fl", "url_s permissionsHash_s size_d lastModified_dt");
 		query.add("fq", "url_s:smb*");
-		//query.add("fq", "connectorId_s:00003398916");
+		query.add("fq", "connectorId_s:" + connectorId);
 
 		QueryResponse response = SERVER.query(query);
 		SolrDocumentList results = response.getResults();
