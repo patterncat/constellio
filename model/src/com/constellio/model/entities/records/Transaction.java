@@ -17,14 +17,12 @@ import com.constellio.model.entities.records.wrappers.RecordWrapper;
 import com.constellio.model.entities.records.wrappers.User;
 import com.constellio.model.entities.schemas.MetadataSchemaTypes;
 import com.constellio.model.services.records.RecordUtils;
-import com.constellio.model.utils.ParametrizedInstanceUtilsRuntimeException.UnsupportedArgument;
 
 public class Transaction {
 
 	private String id = UUIDV1Generator.newRandomId();
 
 	boolean skippingRequiredValuesValidation = false;
-	private boolean skippingReferenceToLogicallyDeletedValidation = false;
 
 	Map<String, Record> updatedRecordsMap = new HashMap<>();
 	List<Record> records = new ArrayList<>();
@@ -69,7 +67,6 @@ public class Transaction {
 		this.user = transaction.user;
 		this.recordUpdateOptions = transaction.recordUpdateOptions;
 		this.skippingRequiredValuesValidation = transaction.isSkippingRequiredValuesValidation();
-		this.skippingReferenceToLogicallyDeletedValidation = transaction.isSkippingReferenceToLogicallyDeletedValidation();
 	}
 
 	public boolean isContainingUpdatedRecord(Record record) {
@@ -261,7 +258,7 @@ public class Transaction {
 	}
 
 	public boolean isSkippingReferenceToLogicallyDeletedValidation() {
-		return skippingReferenceToLogicallyDeletedValidation;
+		return recordUpdateOptions.isSkippingReferenceToLogicallyDeletedValidation();
 	}
 
 	public Transaction setSkippingRequiredValuesValidation(boolean skippingRequiredValuesValidation) {
@@ -270,7 +267,7 @@ public class Transaction {
 	}
 
 	public Transaction setSkippingReferenceToLogicallyDeletedValidation(boolean skippingReferenceToLogicallyDeletedValidation) {
-		this.skippingReferenceToLogicallyDeletedValidation = skippingReferenceToLogicallyDeletedValidation;
+		recordUpdateOptions.setSkippingReferenceToLogicallyDeletedValidation(skippingReferenceToLogicallyDeletedValidation);
 		return this;
 	}
 

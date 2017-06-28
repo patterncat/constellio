@@ -12,6 +12,7 @@ import com.constellio.app.modules.es.connectors.spi.Connector;
 import com.constellio.app.modules.es.model.connectors.ConnectorDocument;
 import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbDocument;
 import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbFolder;
+import com.constellio.model.entities.schemas.Schemas;
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
@@ -66,7 +67,8 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
         if (parentId == null && StringUtils.isNotEmpty(jobParams.getParentUrl())) {
             ConnectorSmbFolder parentFolder = jobParams.getSmbRecordService().getFolder(jobParams.getParentUrl());
             parentId = SmbRecordService.getSafeId(parentFolder);
-            if (parentId == null && !jobParams.getUpdater().recentlyUpdated(jobParams.getParentUrl())) {
+            if (parentId == null && !jobParams.getUpdater().recentlyUpdated(jobParams.getParentUrl()) ||
+                    parentFolder != null && parentFolder.isLogicallyDeletedStatus()) {
                 //The cache should be empty too
                 this.connector.getLogger().info("Invalidate cache entry", "URL : " + jobParams.getParentUrl(), Collections.EMPTY_MAP);
                 jobParams.getConnector().getContext().delete(jobParams.getParentUrl());
@@ -89,22 +91,33 @@ public class SmbNewRetrievalJob extends SmbConnectorJob {
         String parentId = null;
         SmbModificationIndicator databaseIndicator = null;
         ConnectorDocument connectorDocument = null;
+        boolean logicallyDeletedStatus = false;
         if (folder) {
-            ConnectorSmbFolder fullDocument = jobParams.getSmbRecordService().getFolder(url);
-            if (fullDocument != null) {
-                connectorDocument = fullDocument;
-                databaseIndicator = getSmbModificationIndicatorFromDatabase(fullDocument);
-                parentId = fullDocument.getParent();
+            ConnectorSmbFolder fullFolder = jobParams.getSmbRecordService().getFolder(url);
+            if (fullFolder != null) {
+                if (fullFolder.isLogicallyDeletedStatus()) {
+                    logicallyDeletedStatus = true;
+                    fullFolder.set(Schemas.LOGICALLY_DELETED_STATUS, false);
+                    fullFolder.set(Schemas.LOGICALLY_DELETED_ON, null);
+                }
+                connectorDocument = fullFolder;
+                databaseIndicator = getSmbModificationIndicatorFromDatabase(fullFolder);
+                parentId = fullFolder.getParent();
             }
         } else {
             ConnectorSmbDocument fullDocument = jobParams.getSmbRecordService().getDocument(url);
             if (fullDocument != null) {
+                if (fullDocument.isLogicallyDeletedStatus()) {
+                    logicallyDeletedStatus = true;
+                    fullDocument.set(Schemas.LOGICALLY_DELETED_STATUS, false);
+                    fullDocument.set(Schemas.LOGICALLY_DELETED_ON, null);
+                }
                 connectorDocument = fullDocument;
                 databaseIndicator = getSmbModificationIndicatorFromDatabase(fullDocument);
                 parentId = fullDocument.getParent();
             }
         }
-        if (databaseIndicator != null) {
+        if (databaseIndicator != null && !logicallyDeletedStatus) {
             boolean modified = updateConnectorContext(databaseIndicator, parentId);
             if (!modified && (parentId != null || jobParams.getConnectorInstance().getSeeds().contains(url))) {
                 return;

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.constellio.model.entities.records.RecordUpdateOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,8 @@ public class DefaultConnectorEventObserver implements ConnectorEventObserver {
 		this.connectorLogger = connectorLogger;
 		this.resourceName = resourceName;
 		this.userServices = es.getModelLayerFactory().newUserServices();
-		BulkRecordTransactionHandlerOptions options = new BulkRecordTransactionHandlerOptions().withRecordsPerBatch(50);
+		RecordUpdateOptions transactionOptions = new RecordUpdateOptions().setSkippingReferenceToLogicallyDeletedValidation(true);
+		BulkRecordTransactionHandlerOptions options = new BulkRecordTransactionHandlerOptions().withRecordsPerBatch(50).setTransactionOptions(transactionOptions);
 		this.handler = new BulkRecordTransactionHandler(es.getRecordServices(), resourceName, options);
 		this.mappingService = new ConnectorMappingService(es);
 	}
@@ -85,6 +87,7 @@ public class DefaultConnectorEventObserver implements ConnectorEventObserver {
 				flushNow = true;
 		}
 		transaction.setRecordFlushing(flushNow ? RecordsFlushing.NOW : RecordsFlushing.LATER());
+		transaction.setSkippingReferenceToLogicallyDeletedValidation(true);
 
 		try {
 			es.getRecordServices().execute(transaction);
@@ -212,8 +215,10 @@ public class DefaultConnectorEventObserver implements ConnectorEventObserver {
 	public void deleteEvents(DeleteEventOptions options, List<ConnectorDocument> documents) {
 		for (ConnectorDocument document : documents) {
 			try {
-				es.getRecordServices().logicallyDelete(document.getWrappedRecord(), User.GOD, options.logicalDeleteOptions);
-				es.getRecordServices().physicallyDelete(document.getWrappedRecord(), User.GOD, options.physicalDeleteOptions);
+				if (es.getRecordServices().isLogicallyThenPhysicallyDeletable(document.getWrappedRecord(), User.GOD)) {
+					es.getRecordServices().logicallyDelete(document.getWrappedRecord(), User.GOD, options.logicalDeleteOptions);
+					es.getRecordServices().physicallyDelete(document.getWrappedRecord(), User.GOD, options.physicalDeleteOptions);
+				}
 			} catch (RecordServicesRuntimeException e) {
 				String title = "Cannot delete document '" + document.getWrappedRecord().getIdTitle() + "'";
 				String description = ConnectorsUtils.getStackTrace(e);

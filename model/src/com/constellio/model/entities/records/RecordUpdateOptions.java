@@ -25,6 +25,8 @@ public class RecordUpdateOptions {
 
 	private boolean skipUSRMetadatasRequirementValidations = false;
 
+	private boolean skippingReferenceToLogicallyDeletedValidation = false;
+
 	public RecordUpdateOptions() {
 
 	}
@@ -36,6 +38,7 @@ public class RecordUpdateOptions {
 		this.updateModificationInfos = copy.updateModificationInfos;
 		this.fullRewrite = copy.fullRewrite;
 		this.validationsEnabled = copy.validationsEnabled;
+		this.skippingReferenceToLogicallyDeletedValidation = copy.skippingReferenceToLogicallyDeletedValidation;
 	}
 
 	public boolean isSkipUSRMetadatasRequirementValidations() {
@@ -130,6 +133,16 @@ public class RecordUpdateOptions {
 
 	public RecordUpdateOptions setUnicityValidationsEnabled(boolean unicityValidationsEnabled) {
 		this.unicityValidationsEnabled = unicityValidationsEnabled;
+		return this;
+	}
+
+	public boolean isSkippingReferenceToLogicallyDeletedValidation() {
+		return skippingReferenceToLogicallyDeletedValidation;
+	}
+
+	public RecordUpdateOptions setSkippingReferenceToLogicallyDeletedValidation(
+			boolean skippingReferenceToLogicallyDeletedValidation) {
+		this.skippingReferenceToLogicallyDeletedValidation = skippingReferenceToLogicallyDeletedValidation;
 		return this;
 	}
 }
