@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.slf4j.Logger;
 
 import com.constellio.data.conf.ConfigManagerType;
 import com.constellio.data.conf.ContentDaoType;
@@ -56,6 +57,8 @@ import com.constellio.data.utils.ImpossibleRuntimeException;
 
 public class DataLayerFactory extends LayerFactory {
 
+	private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataLayerFactory.class);
+
 	private static final String RECORDS_SEQUENCE_TABLE_CONFIG_PATH = "/sequence.properties";
 	private static final String SECONDARY_SEQUENCE_TABLE_CONFIG_PATH = "/secondarySequence.properties";
 	static final String RECORDS_COLLECTION = "records";
@@ -85,6 +88,7 @@ public class DataLayerFactory extends LayerFactory {
 
 		super(statefullServiceDecorator, instanceName);
 		constructorCalls++;
+		LOGGER.info("DataLayerFactory constructor called");
 		if (constructorCalls >= 2) {
 			new IllegalStateException("Problemo : DataLayerFactory has been constructed " + constructorCalls + " times")
 					.printStackTrace();
@@ -222,6 +226,7 @@ public class DataLayerFactory extends LayerFactory {
 
 	@Override
 	public void initialize() {
+		LOGGER.info("DataLayerFactory initialize() called");
 		initCalls++;
 		super.initialize();
 

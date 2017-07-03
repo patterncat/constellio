@@ -18,17 +18,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.constellio.app.modules.tasks.navigation.TasksNavigationConfiguration;
-
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.Duration;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.constellio.app.modules.tasks.TasksEmailTemplates;
 import com.constellio.app.modules.tasks.model.wrappers.Task;
 import com.constellio.app.modules.tasks.model.wrappers.structures.TaskReminder;
+import com.constellio.app.modules.tasks.navigation.TasksNavigationConfiguration;
 import com.constellio.app.modules.tasks.services.TasksSchemasRecordsServices;
 import com.constellio.app.services.factories.AppLayerFactory;
 import com.constellio.data.dao.managers.StatefulService;
@@ -54,8 +52,6 @@ import com.constellio.model.services.search.query.logical.condition.LogicalSearc
 public class TaskReminderEmailManager implements StatefulService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskReminderEmailManager.class);
 	static int RECORDS_BATCH = 1000;
-	private static final long TWENTY_SECONDS = 60 * 1000l;
-	private static final Duration DURATION_BETWEEN_EXECUTION = new Duration(TWENTY_SECONDS);
 	public static final String ID = "taskReminderEmailManager";
 	private final BackgroundThreadsManager backgroundThreadsManager;
 	private final TasksSchemasRecordsServices taskSchemas;
@@ -91,7 +87,7 @@ public class TaskReminderEmailManager implements StatefulService {
 		backgroundThreadsManager.configure(BackgroundThreadConfiguration
 				.repeatingAction("EmailQueueManager", sendEmailsAction)
 				.handlingExceptionWith(BackgroundThreadExceptionHandling.CONTINUE)
-				.executedEvery(DURATION_BETWEEN_EXECUTION));
+				.executedEvery(Duration.standardMinutes(15)));
 	}
 
 	void generateReminderEmails() {
@@ -183,7 +179,7 @@ public class TaskReminderEmailManager implements StatefulService {
 	}
 
 	private Object formatToParameter(Object parameter) {
-		if(parameter == null) {
+		if (parameter == null) {
 			return "";
 		}
 		return parameter;

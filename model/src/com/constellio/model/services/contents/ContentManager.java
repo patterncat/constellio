@@ -158,7 +158,7 @@ public class ContentManager implements StatefulService {
 			};
 			backgroundThreadsManager.configure(
 					BackgroundThreadConfiguration.repeatingAction(CONTENT_IMPORT_THREAD, contentImportAction)
-							.executedEvery(Duration.standardSeconds(1))
+							.executedEvery(Duration.standardSeconds(30))
 							.handlingExceptionWith(BackgroundThreadExceptionHandling.CONTINUE));
 		}
 
