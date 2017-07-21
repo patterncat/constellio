@@ -52,6 +52,13 @@ public class ContextCleaner {
 						}
 					}
 
+					for (String contextUrl : context.recordUrls.keySet()) {
+						if (!MAP.containsKey(contextUrl)) {
+							context.recordUrls.remove(contextUrl);
+						}
+					}
+
+
 					System.out.println("New cleaned cache size : " + context.recordUrls.size());
 					File savedCache = new File(connectorFolder, "fetchedUrls_fixed.txt");
 					save(context, savedCache);
