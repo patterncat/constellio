@@ -1,26 +1,28 @@
 package com.constellio.data.dao.managers.config;
 
-import com.constellio.data.dao.managers.StatefulService;
-import com.constellio.data.dao.managers.config.ConfigManagerException.OptimisticLockingConfiguration;
-import com.constellio.data.dao.managers.config.events.ConfigEventListener;
-import com.constellio.data.dao.managers.config.events.ConfigUpdatedEventListener;
-import com.constellio.data.dao.managers.config.values.BinaryConfiguration;
-import com.constellio.data.dao.managers.config.values.PropertiesConfiguration;
-import com.constellio.data.dao.managers.config.values.TextConfiguration;
-import com.constellio.data.dao.managers.config.values.XMLConfiguration;
-import com.constellio.data.io.services.facades.IOServices;
-import com.constellio.data.utils.KeyListMap;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.curator.utils.CloseableUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.BadVersionException;
 import org.apache.zookeeper.KeeperException.NoNodeException;
@@ -32,8 +34,16 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.*;
+import com.constellio.data.dao.managers.StatefulService;
+import com.constellio.data.dao.managers.config.ConfigManagerException.OptimisticLockingConfiguration;
+import com.constellio.data.dao.managers.config.events.ConfigEventListener;
+import com.constellio.data.dao.managers.config.events.ConfigUpdatedEventListener;
+import com.constellio.data.dao.managers.config.values.BinaryConfiguration;
+import com.constellio.data.dao.managers.config.values.PropertiesConfiguration;
+import com.constellio.data.dao.managers.config.values.TextConfiguration;
+import com.constellio.data.dao.managers.config.values.XMLConfiguration;
+import com.constellio.data.io.services.facades.IOServices;
+import com.constellio.data.utils.KeyListMap;
 
 public class ZooKeeperConfigManager implements StatefulService, ConfigManager {
 
@@ -386,7 +396,7 @@ public class ZooKeeperConfigManager implements StatefulService, ConfigManager {
 
 	@Override
 	public void copySettingsFrom(File setting) {
-		throw new RuntimeException("Not supported operation copySettingsFrom existing folder");
+		//throw new RuntimeException("Not supported operation copySettingsFrom existing folder");
 	}
 
 	@Override
