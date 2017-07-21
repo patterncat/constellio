@@ -4,11 +4,15 @@ import static com.constellio.model.services.search.query.logical.LogicalSearchQu
 
 import java.util.*;
 
+import com.constellio.app.modules.es.connectors.smb.cache.ContextUtils;
+import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
 import com.constellio.app.modules.es.constants.ESTaxonomies;
 import com.constellio.data.dao.dto.records.FacetValue;
 import com.constellio.model.entities.records.Record;
+import com.constellio.model.entities.schemas.Metadata;
 import com.constellio.model.services.search.SPEQueryResponse;
 import com.constellio.model.services.search.query.ReturnedMetadatasFilter;
+import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.constellio.app.modules.es.connectors.smb.utils.ConnectorSmbUtils;
@@ -19,6 +23,7 @@ import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbInstance;
 import com.constellio.app.modules.es.services.ESSchemasRecordsServices;
 import com.constellio.model.entities.schemas.Schemas;
 import com.constellio.model.services.search.query.logical.LogicalSearchQuery;
+import org.joda.time.LocalDateTime;
 
 public class SmbRecordService {
 	private ESSchemasRecordsServices es;
@@ -115,13 +120,6 @@ public class SmbRecordService {
 		connectorInstance.setResumeUrl(url);
 	}
 
-	public Iterator<ConnectorSmbDocument> getAllDocumentsInFolder(ConnectorDocument<?> folderToDelete) {
-		if (folderToDelete.getPaths().isEmpty()) {
-			return new ArrayList<ConnectorSmbDocument>().iterator();
-		}
-		String path = folderToDelete.getPaths().get(0);
-		return es.iterateConnectorSmbDocuments(where(Schemas.PATH).isStartingWithText(path));
-	}
 
 	public Set<String> duplicateDocuments() {
 		LogicalSearchQuery query = new LogicalSearchQuery(es.fromAllDocumentsOf(connectorInstance.getId()))
@@ -142,21 +140,62 @@ public class SmbRecordService {
 		return urls;
 	}
 
-	public Set<String> misplacedUrls() {
-		List<String> seeds = connectorInstance.getSeeds();
-
-		LogicalSearchQuery query = new LogicalSearchQuery(es.fromAllDocumentsOf(connectorInstance.getId())
-			.andWhere(Schemas.PARENT_PATH).is("/" + ESTaxonomies.SMB_FOLDERS))
-			.setReturnedMetadatas(ReturnedMetadatasFilter.onlyMetadatas(Schemas.URL))
-			.setNumberOfRows(10_000);
-
-		Set<String> urls = new HashSet<>();
-		SPEQueryResponse response = es.getAppLayerFactory().getModelLayerFactory().newSearchServices().query(query);
-		for (Record record : response.getRecords()) {
-			urls.add(record.get(Schemas.URL).toString());
+	public void syncContext(SmbConnectorContext context) {
+		Map<String, SmbModificationIndicator> urlsFromDb = urlsFromDb();
+		String traversalCode = UUID.randomUUID().toString();;
+		for (Map.Entry<String, SmbModificationIndicator> databaseEntry : urlsFromDb.entrySet()) {
+			context.traverseModified(databaseEntry.getKey(), databaseEntry.getValue(), databaseEntry.getValue().getParentId(), traversalCode);
 		}
+		for (String url : context.staleUrls(traversalCode)) {
+			context.delete(url);
+		}
+	}
 
-		urls.removeAll(seeds);
+	private Map<String, SmbModificationIndicator> urlsFromDb() {
+		Map<String, SmbModificationIndicator> urls = new HashMap<>();
+		Metadata url = Schemas.URL;
+		Metadata permissionHash = es.connectorSmbDocument.permissionsHash();
+		Metadata size = es.connectorSmbDocument.size();
+		Metadata lastModified = es.connectorSmbDocument.lastModified();
+		Metadata parent = es.connectorSmbDocument.parent();
+		Metadata parentFolder = es.connectorSmbFolder.parent();
+
+		LogicalSearchQuery query = new LogicalSearchQuery(es.fromAllDocumentsOf(connectorInstance.getId()));
+		query.setReturnedMetadatas(ReturnedMetadatasFilter.onlyMetadatas(url, permissionHash, size, lastModified, parent, parentFolder));
+		int startRow = 0;
+		query.setNumberOfRows(10_000);
+		while(true) {
+			SPEQueryResponse response = es.getAppLayerFactory().getModelLayerFactory().newSearchServices().query(query);
+			List<Record> records = response.getRecords();
+			if (records.isEmpty()) {
+				break;
+			}
+			for (Record record : response.getRecords()) {
+				String urlValue = record.get(url);
+				String permissionHashValue = record.get(permissionHash);
+				permissionHashValue = StringUtils.defaultString(permissionHashValue);
+				Double sizeDouble = record.get(size);
+				String parentValue = (String) record.get(parent);
+				if (parentValue == null) {
+					parentValue = (String) record.get(parentFolder);
+				}
+				double sizeValue = 0;
+				if (sizeDouble != null) {
+					sizeValue = sizeDouble;
+				}
+				LocalDateTime lastModifiedDateTime = record.get(lastModified);
+				long lastModifiedValue = -1;
+				if (lastModifiedDateTime != null) {
+					lastModifiedValue = lastModifiedDateTime.toDate().getTime();
+				}
+
+				SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(permissionHashValue, sizeValue, lastModifiedValue);
+				databaseIndicator.setParentId(parentValue);
+				urls.put(urlValue, databaseIndicator);
+				startRow++;
+			}
+			query.setStartRow(startRow);
+		}
 
 		return urls;
 	}

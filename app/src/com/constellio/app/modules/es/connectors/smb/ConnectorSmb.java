@@ -230,6 +230,7 @@ public class ConnectorSmb extends Connector {
         try {
 			this.duplicateUrls.clear();
 			this.duplicateUrls.addAll(this.smbRecordService.duplicateDocuments());
+			this.smbRecordService.syncContext(this.context);
 		} catch (Exception e) {
 			logger.errorUnexpected(e);
 		}
