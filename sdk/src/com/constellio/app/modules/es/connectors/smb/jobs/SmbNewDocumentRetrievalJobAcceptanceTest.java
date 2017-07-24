@@ -2,7 +2,6 @@ package com.constellio.app.modules.es.connectors.smb.jobs;
 
 import com.constellio.app.modules.es.connectors.smb.ConnectorSmb;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
-import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContextServices;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbDocumentOrFolderUpdater;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactory;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl;
@@ -83,8 +82,7 @@ public class SmbNewDocumentRetrievalJobAcceptanceTest extends ConstellioTest {
 		updater = Mockito.spy(new SmbDocumentOrFolderUpdater(connectorInstance, smbRecordService));
 		smbUtils = new ConnectorSmbUtils();
 
-		SmbConnectorContextServices contextServices = new SmbConnectorContextServices(es);
-		context = contextServices.createContext(connectorInstance.getId());
+		context = new SmbConnectorContext(connectorInstance.getId());
 		when(connector.getContext()).thenReturn(context);
 		jobFactory = new SmbJobFactoryImpl(connector, connectorInstance, eventObserver, smbService, smbUtils, smbRecordService, updater);
 
@@ -165,8 +163,6 @@ public class SmbNewDocumentRetrievalJobAcceptanceTest extends ConstellioTest {
 
 		smbModificationIndicator = connector.getContext().getModificationIndicator(FILE_URL);
 		assertThat(smbModificationIndicator).isNull();
-
-		when(smbRecordService.getDocument(FILE_URL)).thenReturn(mock(ConnectorSmbDocument.class));
 
 		retrievalJob = new SmbNewRetrievalJob(jobParams, shareModificationIndicator, false);
 		retrievalJob.execute(connector);

@@ -5,10 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.constellio.app.modules.es.connectors.smb.LastFetchedStatus;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
-import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContextServices;
 import com.constellio.model.services.schemas.builders.CommonMetadataBuilder;
 import org.assertj.core.api.Condition;
-import org.joda.time.LocalDateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,31 +56,7 @@ public class SmbRecordServiceAcceptanceTest extends ConstellioTest {
 		es.getConnectorManager()
 				.createConnector(connectorInstance);
 
-
-		SmbConnectorContextServices contextServices = new SmbConnectorContextServices(es);
-		context = contextServices.createContext(connectorInstance.getId());
-	}
-
-	@Test
-	public void givenNewDocumentWhenVerifyingIfNewThenTrue() {
-
-		SmbRecordService smbRecordService = new SmbRecordService(es, connectorInstance);
-
-		assertThat(smbRecordService.getDocument(SmbTestParams.EXISTING_SHARE + SmbTestParams.EXISTING_FILE)).isNull();
-	}
-
-	@Test
-	public void givenExistingDocumentWhenVerifyingIfNewThenFalse()
-			throws RecordServicesException {
-		SmbRecordService smbRecordService = new SmbRecordService(es, connectorInstance);
-
-		ConnectorSmbDocument document = es.newConnectorSmbDocument(connectorInstance);
-		document.setUrl(SmbTestParams.EXISTING_SHARE + SmbTestParams.EXISTING_FILE);
-
-		recordService.update(document.getWrappedRecord());
-		recordService.flush();
-
-		assertThat(smbRecordService.getDocument(SmbTestParams.EXISTING_SHARE + SmbTestParams.EXISTING_FILE)).isNotNull();
+		context = new SmbConnectorContext(connectorInstance.getId());
 	}
 
 	@Test
@@ -113,7 +87,7 @@ public class SmbRecordServiceAcceptanceTest extends ConstellioTest {
 			throws RecordServicesException {
 		SmbRecordService smbRecordService = new SmbRecordService(es, connectorInstance);
 
-		ConnectorSmbFolder folder = smbRecordService.newConnectorSmbFolder(SmbTestParams.EXISTING_SHARE)
+		ConnectorSmbFolder folder = (ConnectorSmbFolder) smbRecordService.newConnectorDocument(SmbTestParams.EXISTING_SHARE)
 				.setUrl(SmbTestParams.EXISTING_SHARE);
 
 		recordService.update(folder);

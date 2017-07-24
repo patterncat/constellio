@@ -215,14 +215,13 @@ public class DefaultConnectorEventObserver implements ConnectorEventObserver {
 	public void deleteEvents(DeleteEventOptions options, List<ConnectorDocument> documents) {
 		for (ConnectorDocument document : documents) {
 			try {
-				if (es.getRecordServices().isLogicallyThenPhysicallyDeletable(document.getWrappedRecord(), User.GOD)) {
-					es.getRecordServices().logicallyDelete(document.getWrappedRecord(), User.GOD, options.logicalDeleteOptions);
-					es.getRecordServices().physicallyDelete(document.getWrappedRecord(), User.GOD, options.physicalDeleteOptions);
-				}
+				es.getRecordServices().logicallyDelete(document.getWrappedRecord(), User.GOD, options.logicalDeleteOptions);
+				es.getRecordServices().physicallyDelete(document.getWrappedRecord(), User.GOD, options.physicalDeleteOptions);
 			} catch (RecordServicesRuntimeException e) {
 				String title = "Cannot delete document '" + document.getWrappedRecord().getIdTitle() + "'";
 				String description = ConnectorsUtils.getStackTrace(e);
 				connectorLogger.error(title, description, new HashMap<String, String>());
+				throw new RuntimeException(e);
 			}
 		}
 	}

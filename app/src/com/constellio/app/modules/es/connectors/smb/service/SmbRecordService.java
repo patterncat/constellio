@@ -1,18 +1,13 @@
 package com.constellio.app.modules.es.connectors.smb.service;
 
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.where;
-
 import java.util.*;
 
-import com.constellio.app.modules.es.connectors.smb.cache.ContextUtils;
 import com.constellio.app.modules.es.connectors.smb.cache.SmbConnectorContext;
-import com.constellio.app.modules.es.constants.ESTaxonomies;
 import com.constellio.data.dao.dto.records.FacetValue;
 import com.constellio.model.entities.records.Record;
 import com.constellio.model.entities.schemas.Metadata;
 import com.constellio.model.services.search.SPEQueryResponse;
 import com.constellio.model.services.search.query.ReturnedMetadatasFilter;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.commons.lang3.StringUtils;
 
 import com.constellio.app.modules.es.connectors.smb.utils.ConnectorSmbUtils;
@@ -36,14 +31,6 @@ public class SmbRecordService {
 		this.smbUtils = new ConnectorSmbUtils();
 	}
 
-	public static String getSafeId(ConnectorSmbFolder folder) {
-		String folderId = null;
-		if (folder != null) {
-			folderId = folder.getId();
-		}
-		return folderId;
-	}
-
 	public List<ConnectorSmbDocument> getDocuments(String url) {
 		return es.searchConnectorSmbDocuments(es.fromConnectorSmbDocumentWhereConnectorIs(connectorInstance)
 				.andWhere(es.connectorSmbDocument.url())
@@ -54,11 +41,6 @@ public class SmbRecordService {
 		return es.searchConnectorSmbFolders(es.fromConnectorSmbFolderWhereConnectorIs(connectorInstance)
 				.andWhere(es.connectorSmbFolder.url())
 				.isEqualTo(url));
-	}
-
-	public synchronized ConnectorSmbDocument newConnectorSmbDocument(String url) {
-		ConnectorSmbDocument document = es.newConnectorSmbDocument(connectorInstance);
-		return document;
 	}
 
 	public ConnectorSmbDocument convertToSmbDocumentOrNull(ConnectorDocument document) {
@@ -87,9 +69,11 @@ public class SmbRecordService {
 		return result;
 	}
 
-	public synchronized ConnectorSmbFolder newConnectorSmbFolder(String url) {
-		ConnectorSmbFolder folder = es.newConnectorSmbFolder(connectorInstance);
-		return folder;
+	public ConnectorDocument newConnectorDocument(String url) {
+		if (smbUtils.isFolder(url)) {
+			return es.newConnectorSmbFolder(connectorInstance);
+		}
+		return es.newConnectorSmbDocument(connectorInstance);
 	}
 
 	public ConnectorSmbFolder getFolder(String url) {
@@ -101,18 +85,6 @@ public class SmbRecordService {
 				return null;
 			}
 			return folders.get(0);
-		}
-	}
-
-	public ConnectorSmbDocument getDocument(String url) {
-		if (StringUtils.isBlank(url)) {
-			return null;
-		} else {
-			List<ConnectorSmbDocument> documents = getDocuments(url);
-			if (documents.isEmpty()) {
-				return null;
-			}
-			return documents.get(0);
 		}
 	}
 
@@ -142,9 +114,9 @@ public class SmbRecordService {
 
 	public void syncContext(SmbConnectorContext context) {
 		Map<String, SmbModificationIndicator> urlsFromDb = urlsFromDb();
-		String traversalCode = UUID.randomUUID().toString();;
+		String traversalCode = UUID.randomUUID().toString();
 		for (Map.Entry<String, SmbModificationIndicator> databaseEntry : urlsFromDb.entrySet()) {
-			context.traverseModified(databaseEntry.getKey(), databaseEntry.getValue(), databaseEntry.getValue().getParentId(), traversalCode);
+			context.traverseModified(databaseEntry.getKey(), databaseEntry.getValue(), traversalCode);
 		}
 		for (String url : context.staleUrls(traversalCode)) {
 			context.delete(url);
@@ -175,9 +147,10 @@ public class SmbRecordService {
 				String permissionHashValue = record.get(permissionHash);
 				permissionHashValue = StringUtils.defaultString(permissionHashValue);
 				Double sizeDouble = record.get(size);
-				String parentValue = (String) record.get(parent);
+
+				String parentValue = record.get(parent);
 				if (parentValue == null) {
-					parentValue = (String) record.get(parentFolder);
+					parentValue = record.get(parentFolder);
 				}
 				double sizeValue = 0;
 				if (sizeDouble != null) {
@@ -190,7 +163,7 @@ public class SmbRecordService {
 				}
 
 				SmbModificationIndicator databaseIndicator = new SmbModificationIndicator(permissionHashValue, sizeValue, lastModifiedValue);
-				databaseIndicator.setParentId(parentValue);
+				databaseIndicator.setId(record.getId());
 				urls.put(urlValue, databaseIndicator);
 				startRow++;
 			}

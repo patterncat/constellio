@@ -10,18 +10,17 @@ public class SmbConnectorContext implements Serializable {
 
 	final String connectorId;
 
-	SmbConnectorContext(String connectorId) {
+	public SmbConnectorContext(String connectorId) {
 		this.connectorId = connectorId;
 	}
 
-	Map<String, SmbModificationIndicator> recordUrls = new HashMap<>();
+	private Map<String, SmbModificationIndicator> recordUrls = new HashMap<>();
 
 	public synchronized SmbModificationIndicator getModificationIndicator(String url) {
 		return recordUrls.get(url);
 	}
 
-	public synchronized void traverseModified(String url, SmbModificationIndicator modificationIndicator, String parentId, String traversalCode) {
-		modificationIndicator.setParentId(parentId);
+	public synchronized void traverseModified(String url, SmbModificationIndicator modificationIndicator, String traversalCode) {
 		modificationIndicator.setTraversalCode(traversalCode);
 		recordUrls.put(url, modificationIndicator);
 	}
@@ -33,10 +32,10 @@ public class SmbConnectorContext implements Serializable {
 		}
 	}
 
-	public synchronized String getParentId(String url) {
+	public synchronized String getId(String url) {
 		SmbModificationIndicator indicator = recordUrls.get(url);
 		if (indicator != null) {
-			return indicator.getParentId();
+			return indicator.getId();
 		}
 		return null;
 	}

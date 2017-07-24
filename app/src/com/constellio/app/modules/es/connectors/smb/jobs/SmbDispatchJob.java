@@ -4,8 +4,10 @@ import com.constellio.app.modules.es.connectors.smb.ConnectorSmb;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbConnectorJob;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl.SmbJobCategory;
 import com.constellio.app.modules.es.connectors.smb.jobmanagement.SmbJobFactoryImpl.SmbJobType;
+import com.constellio.app.modules.es.connectors.smb.service.SmbModificationIndicator;
 import com.constellio.app.modules.es.connectors.spi.Connector;
 import com.constellio.app.modules.es.connectors.spi.ConnectorJob;
+import com.constellio.app.modules.es.model.connectors.smb.ConnectorSmbFolder;
 
 import java.util.List;
 
@@ -25,12 +27,13 @@ public class SmbDispatchJob extends SmbConnectorJob {
 		String url = jobParams.getUrl();
 
 		SmbConnectorJob smbRetrievalJob = jobParams.getJobFactory().get(SmbJobCategory.RETRIEVAL, url, jobParams.getParentUrl());
-		if (!(smbRetrievalJob instanceof SmbNullJob)) {
-			connectorSmb.queueJob(smbRetrievalJob);
+		connectorSmb.queueJob(smbRetrievalJob);
 
-			if (!(smbRetrievalJob instanceof SmbDeleteJob)) {
-				if (jobParams.getSmbUtils().isFolder(url)) {
+		if (!(smbRetrievalJob instanceof SmbDeleteJob)) {
+			if (jobParams.getSmbUtils().isFolder(url)) {
+				if (connectorSmb.getContext().getId(url) != null) {
 					List<String> childrenUrls = jobParams.getSmbShareService().getChildrenUrlsFor(url);
+
 					for (String childUrl : childrenUrls) {
 						if (jobParams.getSmbUtils().isFolder(childUrl)) {
 							SmbConnectorJob smbChildFolderRetrievalJob = jobParams.getJobFactory().get(SmbJobCategory.DISPATCH, childUrl, url);
@@ -40,9 +43,18 @@ public class SmbDispatchJob extends SmbConnectorJob {
 							connectorSmb.queueJob(smbChildDocumentRetrievalJob);
 						}
 					}
+				} else {
+					SmbModificationIndicator modificationIndicator = connectorSmb.getContext().getModificationIndicator(url);
+					if (modificationIndicator != null) {
+						ConnectorSmbFolder connectorSmbFolder = jobParams.getSmbRecordService().getFolder(url);
+						if (connectorSmbFolder != null) {
+							modificationIndicator.setId(connectorSmbFolder.getId());
+						}
+					}
 				}
 			}
 		}
+
 	}
 
 	@Override

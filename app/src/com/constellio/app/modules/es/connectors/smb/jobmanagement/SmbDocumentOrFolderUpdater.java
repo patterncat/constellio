@@ -26,16 +26,13 @@ public class SmbDocumentOrFolderUpdater {
 
 	private final ConnectorSmbInstance connectorInstance;
 	private SmbRecordService smbRecordService;
-	private Queue lastDocuments;
 
 	public SmbDocumentOrFolderUpdater(ConnectorSmbInstance connectorInstance, SmbRecordService smbRecordService) {
 		this.connectorInstance = connectorInstance;
 		this.smbRecordService = smbRecordService;
-		lastDocuments = Queues.synchronizedQueue(EvictingQueue.create(ConnectorSmb.MAX_JOBS_PER_GET_JOBS_CALL));
 	}
 
 	public void updateDocumentOrFolder(SmbFileDTO smbFileDTO, ConnectorDocument<?> documentOrFolder, String parentId, boolean seed) {
-		lastDocuments.add(smbFileDTO.getUrl());
 		ConnectorSmbDocument smbDocument = smbRecordService.convertToSmbDocumentOrNull(documentOrFolder);
 		if (smbDocument != null) {
 			updateFullDocumentDTO(smbFileDTO, smbDocument, parentId);
@@ -45,10 +42,6 @@ public class SmbDocumentOrFolderUpdater {
 				updateFullFolderDTO(smbFileDTO, smbFolder, parentId, seed);
 			}
 		}
-	}
-
-	public boolean recentlyUpdated(String url) {
-		return lastDocuments.contains(url);
 	}
 
 	private void updateFullDocumentDTO(SmbFileDTO smbFileDTO, ConnectorSmbDocument smbDocument, String parentId) {
@@ -183,20 +176,5 @@ public class SmbDocumentOrFolderUpdater {
 				.setErrorStackTrace(smbFileDTO.getErrorMessage())
 				.incrementErrorsCount()
 				.setParent(parentId);
-	}
-
-	public void updateUnmodifiedDocument(SmbFileDTO smbFileDTO, ConnectorDocument<?> document, String parentId) {
-		ConnectorSmbDocument smbDocument = smbRecordService.convertToSmbDocumentOrNull(document);
-		if (smbDocument != null) {
-			smbDocument.setTraversalCode(connectorInstance.getTraversalCode());
-			smbDocument.setLastFetched(smbFileDTO.getLastFetchAttempt());
-			smbDocument.setLastFetchAttemptStatus(LastFetchedStatus.OK);
-			smbDocument.setParent(parentId);
-
-			smbDocument.setErrorCode(null);
-			smbDocument.setErrorMessage(null);
-			smbDocument.setErrorStackTrace(null);
-			smbDocument.resetErrorsCount();
-		}
 	}
 }

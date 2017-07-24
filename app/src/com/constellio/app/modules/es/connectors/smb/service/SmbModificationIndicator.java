@@ -6,7 +6,7 @@ import org.joda.time.LocalDateTime;
 import java.io.Serializable;
 
 public class SmbModificationIndicator implements Serializable {
-    private String parentId;
+    private String id;
     private final String permissionsHash;
     private final double size;
     private final long lastModified;
@@ -16,13 +16,6 @@ public class SmbModificationIndicator implements Serializable {
         this.permissionsHash = permissionsHash;
         this.size = size;
         this.lastModified = lastModified;
-    }
-
-    public SmbModificationIndicator(SmbFileDTO smbObject) {
-        this.parentId = parentId;
-        this.permissionsHash = smbObject.getPermissionsHash();
-        this.size = smbObject.getLength();
-        this.lastModified = smbObject.getLastModified();
     }
 
     @Override
@@ -36,14 +29,6 @@ public class SmbModificationIndicator implements Serializable {
             }
         }
         return false;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
     }
 
     public void setTraversalCode(String traversalCode) {
@@ -65,4 +50,8 @@ public class SmbModificationIndicator implements Serializable {
     public long getLastModified() {
         return lastModified;
     }
+
+    public String getId() { return id; }
+
+    public void setId(String id) { this.id = id; }
 }
