@@ -16,8 +16,6 @@ public class SIParchive extends TemporaryRecord {
 
     public static final String NAME = "name";
 
-    public static final String CREATION_DATE = "creationDate";
-
     public static final String USER = "user";
 
     public SIParchive(Record record, MetadataSchemaTypes types) {
@@ -30,15 +28,6 @@ public class SIParchive extends TemporaryRecord {
 
     public SIParchive setName(String name) {
         set(NAME, name);
-        return this;
-    }
-
-    public LocalDateTime getCreationDate() {
-        return get(CREATION_DATE);
-    }
-
-    public SIParchive setCreationDate(LocalDateTime localDateTime) {
-        set(CREATION_DATE, localDateTime);
         return this;
     }
 

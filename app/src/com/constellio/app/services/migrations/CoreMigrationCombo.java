@@ -13,41 +13,7 @@ import com.constellio.app.entities.modules.MigrationResourcesProvider;
 import com.constellio.app.entities.modules.MigrationScript;
 import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
 import com.constellio.app.services.factories.AppLayerFactory;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_0_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_0_4;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_0_5;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_0_6_6;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_0_7;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_0;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_1_3;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_2;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_3;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_4;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_6;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_1_7;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_5_2;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_0;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_3;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_4;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_4_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_14;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_19;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_21;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_22;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_42;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_5_50;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_6_6;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_0;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_0_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_1_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_1_3_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_2;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_3;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_3_0_1;
-import com.constellio.app.services.migrations.scripts.CoreMigrationTo_7_4;
+import com.constellio.app.services.migrations.scripts.*;
 import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
 import com.constellio.model.entities.records.Transaction;
@@ -59,6 +25,7 @@ import com.constellio.model.services.migrations.ConstellioEIMConfigs;
 import com.constellio.model.services.records.RecordServices;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
 import com.constellio.model.services.search.entities.SearchBoost;
+import com.constellio.model.services.security.roles.RolesManager;
 
 public class CoreMigrationCombo implements ComboMigrationScript {
 	@Override
@@ -100,7 +67,9 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 		scripts.add(new CoreMigrationTo_7_3());
 		scripts.add(new CoreMigrationTo_7_3_0_1());
 		scripts.add(new CoreMigrationTo_7_4());
-
+		scripts.add(new CoreMigrationTo_7_4_2());
+		scripts.add(new CoreMigrationTo_7_4_3());
+		scripts.add(new CoreMigrationTo_7_5());
 		return scripts;
 	}
 
@@ -215,6 +184,8 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 		protected void migrate(MetadataSchemaTypesBuilder typesBuilder) {
 
 			if (Collection.SYSTEM_COLLECTION.equals(typesBuilder.getCollection())) {
+				RolesManager rolesManager = appLayerFactory.getModelLayerFactory().getRolesManager();
+				rolesManager.updateRole(rolesManager.getRole(collection, "ADM").withNewPermissions(asList("core.manageExcelReport", "core.managerTemporaryRecords", "core.seeAllTemporaryRecords")));
 				generatedSystemMigrationCombo.applyGeneratedSchemaAlteration(typesBuilder);
 			} else {
 				generatedFastCoreMigration.applyGeneratedSchemaAlteration(typesBuilder);

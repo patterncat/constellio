@@ -63,7 +63,6 @@ public class RMMigrationTo7_5 extends MigrationHelper implements MigrationScript
 
             MetadataSchemaBuilder builder = typesBuilder.getSchemaType(TemporaryRecord.SCHEMA_TYPE).createCustomSchema(SIParchive.SCHEMA_NAME);
             builder.createUndeletable(SIParchive.NAME).setType(MetadataValueType.STRING).defineDataEntry().asManual();
-            builder.createUndeletable(SIParchive.CREATION_DATE).setType(MetadataValueType.DATE_TIME).setDefaultValue(new LocalDateTime()).setEssential(true);
             builder.createUndeletable(SIParchive.USER).setType(MetadataValueType.REFERENCE).defineReferencesTo(typesBuilder.getSchemaType(User.SCHEMA_TYPE)).defineDataEntry().asManual();
 
             MetadataSchemaBuilder printableReportMetadataSchemaBuilder = typesBuilder.getSchemaType(Printable.SCHEMA_TYPE).getDefaultSchema();

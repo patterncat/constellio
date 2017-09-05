@@ -1,5 +1,6 @@
 package com.constellio.app.modules.tasks.migrations;
 
+import static com.constellio.data.utils.HashMapBuilder.stringObjectMap;
 import static java.util.Arrays.asList;
 
 import com.constellio.app.entities.modules.MigrationResourcesProvider;
@@ -43,6 +44,8 @@ import com.constellio.model.services.schemas.validators.ManualTokenValidator;
 import com.constellio.model.services.schemas.validators.PercentageValidator;
 import com.constellio.model.services.security.roles.RolesManager;
 
+import java.lang.String;
+
 public final class GeneratedTasksMigrationCombo {
   String collection;
 
@@ -82,6 +85,10 @@ public final class GeneratedTasksMigrationCombo {
     MetadataSchemaTypeBuilder taskSchemaType = typesBuilder.getSchemaType("task");
     MetadataSchemaBuilder task_approvalSchema = taskSchemaType.getCustomSchema("approval");
     MetadataSchemaBuilder taskSchema = taskSchemaType.getDefaultSchema();
+    MetadataSchemaTypeBuilder temporaryRecordSchemaType = typesBuilder.getSchemaType("temporaryRecord");
+    MetadataSchemaBuilder temporaryRecord_exportAuditSchema = temporaryRecordSchemaType.getCustomSchema("exportAudit");
+    MetadataSchemaBuilder temporaryRecord_importAuditSchema = temporaryRecordSchemaType.getCustomSchema("importAudit");
+    MetadataSchemaBuilder temporaryRecordSchema = temporaryRecordSchemaType.getDefaultSchema();
     MetadataSchemaTypeBuilder userDocumentSchemaType = typesBuilder.getSchemaType("userDocument");
     MetadataSchemaBuilder userDocumentSchema = userDocumentSchemaType.getDefaultSchema();
     MetadataSchemaTypeBuilder userFolderSchemaType = typesBuilder.getSchemaType("userFolder");
@@ -507,6 +514,9 @@ public final class GeneratedTasksMigrationCombo {
     MetadataBuilder userTask_errorOnPhysicalDeletion = userTaskSchema.get("errorOnPhysicalDeletion");
     userTask_errorOnPhysicalDeletion.setSystemReserved(true);
     userTask_errorOnPhysicalDeletion.setUndeletable(true);
+    MetadataBuilder userTask_escalationAssignee = userTaskSchema.create("escalationAssignee").setType(MetadataValueType.REFERENCE);
+    userTask_escalationAssignee.setUndeletable(true);
+    userTask_escalationAssignee.defineReferencesTo(userSchemaType);
     MetadataBuilder userTask_followers = userTaskSchema.get("followers");
     userTask_followers.setMultivalue(true);
     userTask_followers.setSystemReserved(true);
@@ -525,6 +535,9 @@ public final class GeneratedTasksMigrationCombo {
     userTask_inheritedauthorizations.setSystemReserved(true);
     userTask_inheritedauthorizations.setUndeletable(true);
     MetadataBuilder userTask_isModel = userTaskSchema.create("isModel").setType(MetadataValueType.BOOLEAN);
+    MetadataBuilder userTask_lastReminder = userTaskSchema.create("lastReminder").setType(MetadataValueType.DATE_TIME);
+    userTask_lastReminder.setSystemReserved(true);
+    userTask_lastReminder.setUndeletable(true);
     MetadataBuilder userTask_legacyIdentifier = userTaskSchema.get("legacyIdentifier");
     userTask_legacyIdentifier.setDefaultRequirement(true);
     userTask_legacyIdentifier.setSystemReserved(true);
@@ -570,6 +583,10 @@ public final class GeneratedTasksMigrationCombo {
     userTask_nextTasks.defineReferencesTo(userTaskSchemaType);
     MetadataBuilder userTask_nextTasksDecisions = userTaskSchema.create("nextTasksDecisions").setType(MetadataValueType.STRUCTURE);
     userTask_nextTasksDecisions.defineStructureFactory(MapStringStringStructureFactory.class);
+    MetadataBuilder userTask_numberOfReminders = userTaskSchema.create("numberOfReminders").setType(MetadataValueType.NUMBER);
+    userTask_numberOfReminders.setSystemReserved(true);
+    userTask_numberOfReminders.setUndeletable(true);
+    userTask_numberOfReminders.setDefaultValue(0);
     MetadataBuilder userTask_parentTask = userTaskSchema.create("parentTask").setType(MetadataValueType.REFERENCE);
     userTask_parentTask.setUndeletable(true);
     userTask_parentTask.defineChildOfRelationshipToType(userTaskSchemaType);
@@ -594,6 +611,8 @@ public final class GeneratedTasksMigrationCombo {
     userTask_progressPercentage.setUndeletable(true);
     userTask_progressPercentage.defineValidators().add(PercentageValidator.class);
     MetadataBuilder userTask_relativeDueDate = userTaskSchema.create("relativeDueDate").setType(MetadataValueType.NUMBER);
+    MetadataBuilder userTask_reminderFrequency = userTaskSchema.create("reminderFrequency").setType(MetadataValueType.STRING);
+    userTask_reminderFrequency.setUndeletable(true);
     MetadataBuilder userTask_reminders = userTaskSchema.create("reminders").setType(MetadataValueType.STRUCTURE);
     userTask_reminders.setMultivalue(true);
     userTask_reminders.setUndeletable(true);
@@ -619,6 +638,10 @@ public final class GeneratedTasksMigrationCombo {
     userTask_shareTokens.setSystemReserved(true);
     userTask_shareTokens.setUndeletable(true);
     userTask_shareTokens.defineValidators().add(ManualTokenValidator.class);
+    MetadataBuilder userTask_starredByUsers = userTaskSchema.create("starredByUsers").setType(MetadataValueType.STRING);
+    userTask_starredByUsers.setMultivalue(true);
+    userTask_starredByUsers.setSystemReserved(true);
+    userTask_starredByUsers.setUndeletable(true);
     MetadataBuilder userTask_startDate = userTaskSchema.create("startDate").setType(MetadataValueType.DATE);
     userTask_startDate.setUndeletable(true);
     MetadataBuilder userTask_status = userTaskSchema.create("status").setType(MetadataValueType.REFERENCE);
@@ -1095,6 +1118,84 @@ public final class GeneratedTasksMigrationCombo {
     MetadataBuilder task_approval_visibleInTrees = task_approvalSchema.get("visibleInTrees");
     MetadataBuilder task_approval_workflowIdentifier = task_approvalSchema.get("workflowIdentifier");
     MetadataBuilder task_approval_workflowRecordIdentifiers = task_approvalSchema.get("workflowRecordIdentifiers");
+    MetadataBuilder temporaryRecord_exportAudit_allReferences = temporaryRecord_exportAuditSchema.get("allReferences");
+    MetadataBuilder temporaryRecord_exportAudit_allRemovedAuths = temporaryRecord_exportAuditSchema.get("allRemovedAuths");
+    MetadataBuilder temporaryRecord_exportAudit_allauthorizations = temporaryRecord_exportAuditSchema.get("allauthorizations");
+    MetadataBuilder temporaryRecord_exportAudit_attachedAncestors = temporaryRecord_exportAuditSchema.get("attachedAncestors");
+    MetadataBuilder temporaryRecord_exportAudit_authorizations = temporaryRecord_exportAuditSchema.get("authorizations");
+    MetadataBuilder temporaryRecord_exportAudit_autocomplete = temporaryRecord_exportAuditSchema.get("autocomplete");
+    MetadataBuilder temporaryRecord_exportAudit_content = temporaryRecord_exportAuditSchema.get("content");
+    MetadataBuilder temporaryRecord_exportAudit_createdBy = temporaryRecord_exportAuditSchema.get("createdBy");
+    MetadataBuilder temporaryRecord_exportAudit_createdOn = temporaryRecord_exportAuditSchema.get("createdOn");
+    MetadataBuilder temporaryRecord_exportAudit_daysBeforeDestruction = temporaryRecord_exportAuditSchema.get("daysBeforeDestruction");
+    MetadataBuilder temporaryRecord_exportAudit_deleted = temporaryRecord_exportAuditSchema.get("deleted");
+    MetadataBuilder temporaryRecord_exportAudit_denyTokens = temporaryRecord_exportAuditSchema.get("denyTokens");
+    MetadataBuilder temporaryRecord_exportAudit_destructionDate = temporaryRecord_exportAuditSchema.get("destructionDate");
+    MetadataBuilder temporaryRecord_exportAudit_detachedauthorizations = temporaryRecord_exportAuditSchema.get("detachedauthorizations");
+    MetadataBuilder temporaryRecord_exportAudit_errorOnPhysicalDeletion = temporaryRecord_exportAuditSchema.get("errorOnPhysicalDeletion");
+    MetadataBuilder temporaryRecord_exportAudit_followers = temporaryRecord_exportAuditSchema.get("followers");
+    MetadataBuilder temporaryRecord_exportAudit_id = temporaryRecord_exportAuditSchema.get("id");
+    MetadataBuilder temporaryRecord_exportAudit_inheritedauthorizations = temporaryRecord_exportAuditSchema.get("inheritedauthorizations");
+    MetadataBuilder temporaryRecord_exportAudit_legacyIdentifier = temporaryRecord_exportAuditSchema.get("legacyIdentifier");
+    MetadataBuilder temporaryRecord_exportAudit_logicallyDeletedOn = temporaryRecord_exportAuditSchema.get("logicallyDeletedOn");
+    MetadataBuilder temporaryRecord_exportAudit_manualTokens = temporaryRecord_exportAuditSchema.get("manualTokens");
+    MetadataBuilder temporaryRecord_exportAudit_markedForParsing = temporaryRecord_exportAuditSchema.get("markedForParsing");
+    MetadataBuilder temporaryRecord_exportAudit_markedForPreviewConversion = temporaryRecord_exportAuditSchema.get("markedForPreviewConversion");
+    MetadataBuilder temporaryRecord_exportAudit_markedForReindexing = temporaryRecord_exportAuditSchema.get("markedForReindexing");
+    MetadataBuilder temporaryRecord_exportAudit_migrationDataVersion = temporaryRecord_exportAuditSchema.get("migrationDataVersion");
+    MetadataBuilder temporaryRecord_exportAudit_modifiedBy = temporaryRecord_exportAuditSchema.get("modifiedBy");
+    MetadataBuilder temporaryRecord_exportAudit_modifiedOn = temporaryRecord_exportAuditSchema.get("modifiedOn");
+    MetadataBuilder temporaryRecord_exportAudit_parentpath = temporaryRecord_exportAuditSchema.get("parentpath");
+    MetadataBuilder temporaryRecord_exportAudit_path = temporaryRecord_exportAuditSchema.get("path");
+    MetadataBuilder temporaryRecord_exportAudit_pathParts = temporaryRecord_exportAuditSchema.get("pathParts");
+    MetadataBuilder temporaryRecord_exportAudit_principalpath = temporaryRecord_exportAuditSchema.get("principalpath");
+    MetadataBuilder temporaryRecord_exportAudit_removedauthorizations = temporaryRecord_exportAuditSchema.get("removedauthorizations");
+    MetadataBuilder temporaryRecord_exportAudit_schema = temporaryRecord_exportAuditSchema.get("schema");
+    MetadataBuilder temporaryRecord_exportAudit_searchable = temporaryRecord_exportAuditSchema.get("searchable");
+    MetadataBuilder temporaryRecord_exportAudit_shareDenyTokens = temporaryRecord_exportAuditSchema.get("shareDenyTokens");
+    MetadataBuilder temporaryRecord_exportAudit_shareTokens = temporaryRecord_exportAuditSchema.get("shareTokens");
+    MetadataBuilder temporaryRecord_exportAudit_title = temporaryRecord_exportAuditSchema.get("title");
+    MetadataBuilder temporaryRecord_exportAudit_tokens = temporaryRecord_exportAuditSchema.get("tokens");
+    MetadataBuilder temporaryRecord_exportAudit_visibleInTrees = temporaryRecord_exportAuditSchema.get("visibleInTrees");
+    MetadataBuilder temporaryRecord_importAudit_allReferences = temporaryRecord_importAuditSchema.get("allReferences");
+    MetadataBuilder temporaryRecord_importAudit_allRemovedAuths = temporaryRecord_importAuditSchema.get("allRemovedAuths");
+    MetadataBuilder temporaryRecord_importAudit_allauthorizations = temporaryRecord_importAuditSchema.get("allauthorizations");
+    MetadataBuilder temporaryRecord_importAudit_attachedAncestors = temporaryRecord_importAuditSchema.get("attachedAncestors");
+    MetadataBuilder temporaryRecord_importAudit_authorizations = temporaryRecord_importAuditSchema.get("authorizations");
+    MetadataBuilder temporaryRecord_importAudit_autocomplete = temporaryRecord_importAuditSchema.get("autocomplete");
+    MetadataBuilder temporaryRecord_importAudit_content = temporaryRecord_importAuditSchema.get("content");
+    MetadataBuilder temporaryRecord_importAudit_createdBy = temporaryRecord_importAuditSchema.get("createdBy");
+    MetadataBuilder temporaryRecord_importAudit_createdOn = temporaryRecord_importAuditSchema.get("createdOn");
+    MetadataBuilder temporaryRecord_importAudit_daysBeforeDestruction = temporaryRecord_importAuditSchema.get("daysBeforeDestruction");
+    MetadataBuilder temporaryRecord_importAudit_deleted = temporaryRecord_importAuditSchema.get("deleted");
+    MetadataBuilder temporaryRecord_importAudit_denyTokens = temporaryRecord_importAuditSchema.get("denyTokens");
+    MetadataBuilder temporaryRecord_importAudit_destructionDate = temporaryRecord_importAuditSchema.get("destructionDate");
+    MetadataBuilder temporaryRecord_importAudit_detachedauthorizations = temporaryRecord_importAuditSchema.get("detachedauthorizations");
+    MetadataBuilder temporaryRecord_importAudit_errorOnPhysicalDeletion = temporaryRecord_importAuditSchema.get("errorOnPhysicalDeletion");
+    MetadataBuilder temporaryRecord_importAudit_followers = temporaryRecord_importAuditSchema.get("followers");
+    MetadataBuilder temporaryRecord_importAudit_id = temporaryRecord_importAuditSchema.get("id");
+    MetadataBuilder temporaryRecord_importAudit_inheritedauthorizations = temporaryRecord_importAuditSchema.get("inheritedauthorizations");
+    MetadataBuilder temporaryRecord_importAudit_legacyIdentifier = temporaryRecord_importAuditSchema.get("legacyIdentifier");
+    MetadataBuilder temporaryRecord_importAudit_logicallyDeletedOn = temporaryRecord_importAuditSchema.get("logicallyDeletedOn");
+    MetadataBuilder temporaryRecord_importAudit_manualTokens = temporaryRecord_importAuditSchema.get("manualTokens");
+    MetadataBuilder temporaryRecord_importAudit_markedForParsing = temporaryRecord_importAuditSchema.get("markedForParsing");
+    MetadataBuilder temporaryRecord_importAudit_markedForPreviewConversion = temporaryRecord_importAuditSchema.get("markedForPreviewConversion");
+    MetadataBuilder temporaryRecord_importAudit_markedForReindexing = temporaryRecord_importAuditSchema.get("markedForReindexing");
+    MetadataBuilder temporaryRecord_importAudit_migrationDataVersion = temporaryRecord_importAuditSchema.get("migrationDataVersion");
+    MetadataBuilder temporaryRecord_importAudit_modifiedBy = temporaryRecord_importAuditSchema.get("modifiedBy");
+    MetadataBuilder temporaryRecord_importAudit_modifiedOn = temporaryRecord_importAuditSchema.get("modifiedOn");
+    MetadataBuilder temporaryRecord_importAudit_parentpath = temporaryRecord_importAuditSchema.get("parentpath");
+    MetadataBuilder temporaryRecord_importAudit_path = temporaryRecord_importAuditSchema.get("path");
+    MetadataBuilder temporaryRecord_importAudit_pathParts = temporaryRecord_importAuditSchema.get("pathParts");
+    MetadataBuilder temporaryRecord_importAudit_principalpath = temporaryRecord_importAuditSchema.get("principalpath");
+    MetadataBuilder temporaryRecord_importAudit_removedauthorizations = temporaryRecord_importAuditSchema.get("removedauthorizations");
+    MetadataBuilder temporaryRecord_importAudit_schema = temporaryRecord_importAuditSchema.get("schema");
+    MetadataBuilder temporaryRecord_importAudit_searchable = temporaryRecord_importAuditSchema.get("searchable");
+    MetadataBuilder temporaryRecord_importAudit_shareDenyTokens = temporaryRecord_importAuditSchema.get("shareDenyTokens");
+    MetadataBuilder temporaryRecord_importAudit_shareTokens = temporaryRecord_importAuditSchema.get("shareTokens");
+    MetadataBuilder temporaryRecord_importAudit_title = temporaryRecord_importAuditSchema.get("title");
+    MetadataBuilder temporaryRecord_importAudit_tokens = temporaryRecord_importAuditSchema.get("tokens");
+    MetadataBuilder temporaryRecord_importAudit_visibleInTrees = temporaryRecord_importAuditSchema.get("visibleInTrees");
     ddvTaskStatus_allReferences.defineDataEntry().asCalculated(AllReferencesCalculator.class);
     ddvTaskStatus_allRemovedAuths.defineDataEntry().asCalculated(AllRemovedAuthsCalculator.class);
     ddvTaskStatus_allauthorizations.defineDataEntry().asCalculated(AllAuthorizationsCalculator.class);
@@ -1163,7 +1264,7 @@ public final class GeneratedTasksMigrationCombo {
     SchemaTypesDisplayConfig typesConfig = manager.getTypes(collection);
     transaction.add(manager.getMetadata(collection, "ddvTaskStatus_default_statusType").withMetadataGroup("").withInputType(MetadataInputType.DROPDOWN).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getType(collection, "userTask").withSimpleSearchStatus(true).withAdvancedSearchStatus(true).withManageableStatus(false).withMetadataGroup(resourcesProvider.getLanguageMap(asList("default:init.userTask.definition", "init.userTask.remindersTab", "init.userTask.assignment", "init.userTask.details", "init.userTask.followersTab"))));
-    transaction.add(manager.getSchema(collection, "userTask_default").withFormMetadataCodes(asList("userTask_default_title", "userTask_default_type", "userTask_default_assignee", "userTask_default_assigneeGroupsCandidates", "userTask_default_assigneeUsersCandidates", "userTask_default_assigner", "userTask_default_parentTask", "userTask_default_progressPercentage", "userTask_default_status", "userTask_default_assignedOn", "userTask_default_dueDate", "userTask_default_endDate", "userTask_default_startDate", "userTask_default_contents", "userTask_default_description", "userTask_default_reminders", "userTask_default_taskFollowers", "userTask_default_decision", "userTask_default_relativeDueDate")).withDisplayMetadataCodes(asList("userTask_default_title", "userTask_default_type", "userTask_default_createdOn", "userTask_default_modifiedOn", "userTask_default_assignedOn", "userTask_default_assignee", "userTask_default_assigneeGroupsCandidates", "userTask_default_assigneeUsersCandidates", "userTask_default_assigner", "userTask_default_dueDate", "userTask_default_endDate", "userTask_default_nextReminderOn", "userTask_default_parentTask", "userTask_default_parentTaskDueDate", "userTask_default_progressPercentage", "userTask_default_startDate", "userTask_default_status", "userTask_default_taskFollowersIds", "userTask_default_contents", "userTask_default_description", "userTask_default_comments", "userTask_default_decision", "userTask_default_workflow", "userTask_default_workflowInstance", "userTask_default_relativeDueDate")).withSearchResultsMetadataCodes(asList("userTask_default_title", "userTask_default_status", "userTask_default_dueDate", "userTask_default_assignee")).withTableMetadataCodes(asList("userTask_default_title", "userTask_default_modifiedOn")));
+    transaction.add(manager.getSchema(collection, "userTask_default").withFormMetadataCodes(asList("userTask_default_title", "userTask_default_type", "userTask_default_assignee", "userTask_default_assigneeGroupsCandidates", "userTask_default_assigneeUsersCandidates", "userTask_default_assigner", "userTask_default_parentTask", "userTask_default_progressPercentage", "userTask_default_status", "userTask_default_assignedOn", "userTask_default_dueDate", "userTask_default_endDate", "userTask_default_startDate", "userTask_default_contents", "userTask_default_description", "userTask_default_reminders", "userTask_default_taskFollowers", "userTask_default_decision", "userTask_default_relativeDueDate", "userTask_default_reminderFrequency", "userTask_default_escalationAssignee")).withDisplayMetadataCodes(asList("userTask_default_title", "userTask_default_type", "userTask_default_createdOn", "userTask_default_modifiedOn", "userTask_default_assignedOn", "userTask_default_assignee", "userTask_default_assigneeGroupsCandidates", "userTask_default_assigneeUsersCandidates", "userTask_default_assigner", "userTask_default_dueDate", "userTask_default_endDate", "userTask_default_nextReminderOn", "userTask_default_parentTask", "userTask_default_parentTaskDueDate", "userTask_default_progressPercentage", "userTask_default_startDate", "userTask_default_status", "userTask_default_taskFollowersIds", "userTask_default_contents", "userTask_default_description", "userTask_default_comments", "userTask_default_decision", "userTask_default_workflow", "userTask_default_workflowInstance", "userTask_default_relativeDueDate", "userTask_default_reminderFrequency", "userTask_default_escalationAssignee")).withSearchResultsMetadataCodes(asList("userTask_default_title", "userTask_default_status", "userTask_default_dueDate", "userTask_default_assignee")).withTableMetadataCodes(asList("userTask_default_title", "userTask_default_modifiedOn", "userTask_default_starredByUsers")));
     transaction.add(manager.getMetadata(collection, "userTask_default_assignedOn").withMetadataGroup("").withInputType(MetadataInputType.HIDDEN).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_assignee").withMetadataGroup("init.userTask.assignment").withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_assigneeGroupsCandidates").withMetadataGroup("init.userTask.assignment").withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
@@ -1173,9 +1274,11 @@ public final class GeneratedTasksMigrationCombo {
     transaction.add(manager.getMetadata(collection, "userTask_default_description").withMetadataGroup("").withInputType(MetadataInputType.RICHTEXT).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_dueDate").withMetadataGroup("").withInputType(MetadataInputType.FIELD).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_endDate").withMetadataGroup("").withInputType(MetadataInputType.HIDDEN).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
+    transaction.add(manager.getMetadata(collection, "userTask_default_escalationAssignee").withMetadataGroup("init.userTask.remindersTab").withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(false));
     transaction.add(manager.getMetadata(collection, "userTask_default_parentTask").withMetadataGroup("").withInputType(MetadataInputType.HIDDEN).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_parentTaskDueDate").withMetadataGroup("").withInputType(MetadataInputType.FIELD).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_progressPercentage").withMetadataGroup("").withInputType(MetadataInputType.FIELD).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
+    transaction.add(manager.getMetadata(collection, "userTask_default_reminderFrequency").withMetadataGroup("init.userTask.remindersTab").withInputType(MetadataInputType.FIELD).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(false));
     transaction.add(manager.getMetadata(collection, "userTask_default_reminders").withMetadataGroup("init.userTask.remindersTab").withInputType(MetadataInputType.FIELD).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(false));
     transaction.add(manager.getMetadata(collection, "userTask_default_startDate").withMetadataGroup("").withInputType(MetadataInputType.HIDDEN).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
     transaction.add(manager.getMetadata(collection, "userTask_default_status").withMetadataGroup("").withInputType(MetadataInputType.LOOKUP).withHighlightStatus(false).withVisibleInAdvancedSearchStatus(true));
@@ -1188,6 +1291,6 @@ public final class GeneratedTasksMigrationCombo {
 
   public void applyGeneratedRoles() {
     RolesManager rolesManager = appLayerFactory.getModelLayerFactory().getRolesManager();;
-    rolesManager.updateRole(rolesManager.getRole(collection, "ADM").withNewPermissions(asList("core.deleteContentVersion", "core.ldapConfigurationManagement", "core.manageConnectors", "core.manageEmailServer", "core.manageFacets", "core.manageLabels", "core.manageMetadataExtractor", "core.manageMetadataSchemas", "core.managePrintableReport", "core.manageSearchBoost", "core.manageSearchEngine", "core.manageSearchReports", "core.manageSecurity", "core.manageSystemCollections", "core.manageSystemConfiguration", "core.manageSystemDataImports", "core.manageSystemGroups", "core.manageSystemModules", "core.manageSystemServers", "core.manageSystemUpdates", "core.manageSystemUsers", "core.manageTaxonomies", "core.manageTrash", "core.manageValueList", "core.useExternalAPIS", "core.viewEvents", "core.viewSystemBatchProcesses", "tasks.manageWorkflows", "tasks.startWorkflows")));
+    rolesManager.updateRole(rolesManager.getRole(collection, "ADM").withNewPermissions(asList("core.deleteContentVersion", "core.ldapConfigurationManagement", "core.manageConnectors", "core.manageEmailServer", "core.manageExcelReport", "core.manageFacets", "core.manageLabels", "core.manageMetadataExtractor", "core.manageMetadataSchemas", "core.managePrintableReport", "core.manageSearchBoost", "core.manageSearchEngine", "core.manageSearchReports", "core.manageSecurity", "core.manageSystemCollections", "core.manageSystemConfiguration", "core.manageSystemDataImports", "core.manageSystemGroups", "core.manageSystemModules", "core.manageSystemServers", "core.manageSystemUpdates", "core.manageSystemUsers", "core.manageTaxonomies", "core.manageTrash", "core.manageValueList", "core.managerTemporaryRecords", "core.seeAllTemporaryRecords", "core.useExternalAPIS", "core.viewEvents", "core.viewSystemBatchProcesses", "tasks.manageWorkflows", "tasks.startWorkflows")));
   }
 }
