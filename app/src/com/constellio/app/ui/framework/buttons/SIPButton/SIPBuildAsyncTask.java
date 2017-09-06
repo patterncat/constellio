@@ -94,7 +94,6 @@ public class SIPBuildAsyncTask implements AsyncTask {
                 sipArchive.setContent(contentManager.createMajor(currentUser, sipFileName, summary));
                 sipArchive.setUser(currentUser);
                 sipArchive.setCreatedBy(currentUser.getId());
-                sipArchive.setCreationDate(new LocalDateTime());
                 Transaction transaction = new Transaction();
                 transaction.add(sipArchive);
                 modelLayerFactory.newRecordServices().execute(transaction);
