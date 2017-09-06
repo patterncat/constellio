@@ -48,6 +48,7 @@ import com.constellio.model.services.schemas.calculators.TokensCalculator2;
 import com.constellio.model.services.schemas.calculators.UserTokensCalculator2;
 import com.constellio.model.services.schemas.validators.DecisionValidator;
 import com.constellio.model.services.schemas.validators.EmailValidator;
+import com.constellio.model.services.schemas.validators.JasperFilePrintableValidator;
 import com.constellio.model.services.schemas.validators.ManualTokenValidator;
 import com.constellio.model.services.schemas.validators.TemporaryRecordValidator;
 import java.lang.String;
@@ -1386,6 +1387,7 @@ public final class GeneratedCoreMigrationCombo {
     printable_jasperfile.setUndeletable(true);
     printable_jasperfile.setEssential(true);
     printable_jasperfile.defineStructureFactory(ContentFactory.class);
+    printable_jasperfile.defineValidators().add(JasperFilePrintableValidator.class);
     MetadataBuilder printable_legacyIdentifier = printableSchema.get("legacyIdentifier");
     printable_legacyIdentifier.setDefaultRequirement(true);
     printable_legacyIdentifier.setSystemReserved(true);

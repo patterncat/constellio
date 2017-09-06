@@ -124,8 +124,6 @@ import com.constellio.model.services.schemas.calculators.PrincipalPathCalculator
 import com.constellio.model.services.schemas.calculators.TokensCalculator2;
 import com.constellio.model.services.schemas.validators.ManualTokenValidator;
 import com.constellio.model.services.schemas.validators.metadatas.IntegerStringValidator;
-import org.joda.time.LocalDateTime;
-
 import java.lang.String;
 
 public final class GeneratedRMMigrationCombo {
@@ -3963,10 +3961,6 @@ public final class GeneratedRMMigrationCombo {
     storageSpace_visibleInTrees.setSystemReserved(true);
     storageSpace_visibleInTrees.setUndeletable(true);
     storageSpace_visibleInTrees.setEssential(true);
-    MetadataBuilder temporaryRecord_sipArchive_creationDate = temporaryRecord_sipArchiveSchema.create("creationDate").setType(MetadataValueType.DATE_TIME);
-    temporaryRecord_sipArchive_creationDate.setUndeletable(true);
-    temporaryRecord_sipArchive_creationDate.setEssential(true);
-    temporaryRecord_sipArchive_creationDate.setDefaultValue(new LocalDateTime(2017, 9, 5, 15, 24, 45, 261));
     MetadataBuilder temporaryRecord_sipArchive_name = temporaryRecord_sipArchiveSchema.create("name").setType(MetadataValueType.STRING);
     temporaryRecord_sipArchive_name.setUndeletable(true);
     MetadataBuilder temporaryRecord_sipArchive_user = temporaryRecord_sipArchiveSchema.create("user").setType(MetadataValueType.REFERENCE);

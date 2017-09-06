@@ -65,8 +65,8 @@ public class RMMigrationTo7_5 extends MigrationHelper implements MigrationScript
             builder.createUndeletable(SIParchive.NAME).setType(MetadataValueType.STRING).defineDataEntry().asManual();
             builder.createUndeletable(SIParchive.USER).setType(MetadataValueType.REFERENCE).defineReferencesTo(typesBuilder.getSchemaType(User.SCHEMA_TYPE)).defineDataEntry().asManual();
 
-            MetadataSchemaBuilder printableReportMetadataSchemaBuilder = typesBuilder.getSchemaType(Printable.SCHEMA_TYPE).getDefaultSchema();
-            printableReportMetadataSchemaBuilder.get(Printable.JASPERFILE).addValidator(JasperFilePrintableValidator.class);
+//            MetadataSchemaBuilder printableReportMetadataSchemaBuilder = typesBuilder.getSchemaType(Printable.SCHEMA_TYPE).getDefaultSchema();
+//			printableReportMetadataSchemaBuilder.get(Printable.JASPERFILE).addValidator(JasperFilePrintableValidator.class);
         }
 
 	}

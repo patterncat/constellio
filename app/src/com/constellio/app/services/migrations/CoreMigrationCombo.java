@@ -11,19 +11,23 @@ import com.constellio.app.entities.modules.ComboMigrationScript;
 import com.constellio.app.entities.modules.MetadataSchemasAlterationHelper;
 import com.constellio.app.entities.modules.MigrationResourcesProvider;
 import com.constellio.app.entities.modules.MigrationScript;
+import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
 import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
+import com.constellio.app.modules.rm.wrappers.Printable;
 import com.constellio.app.services.factories.AppLayerFactory;
 import com.constellio.app.services.migrations.scripts.*;
 import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
 import com.constellio.app.services.schemasDisplay.SchemasDisplayManager;
 import com.constellio.model.entities.records.Transaction;
 import com.constellio.model.entities.records.wrappers.Collection;
+import com.constellio.model.entities.records.wrappers.TemporaryRecord;
 import com.constellio.model.entities.schemas.MetadataSchemaTypes;
 import com.constellio.model.entities.schemas.Schemas;
 import com.constellio.model.services.factories.ModelLayerFactory;
 import com.constellio.model.services.migrations.ConstellioEIMConfigs;
 import com.constellio.model.services.records.RecordServices;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
+import com.constellio.model.services.schemas.validators.JasperFilePrintableValidator;
 import com.constellio.model.services.search.entities.SearchBoost;
 import com.constellio.model.services.security.roles.RolesManager;
 
@@ -70,6 +74,7 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 		scripts.add(new CoreMigrationTo_7_4_2());
 		scripts.add(new CoreMigrationTo_7_4_3());
 		scripts.add(new CoreMigrationTo_7_5());
+		scripts.add(new CoreMigrationTo_7_5_0_1());
 		return scripts;
 	}
 
@@ -148,6 +153,10 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 
 		transaction.in("savedSearch").addToForm("resultsViewMode").beforeMetadata("schemaFilter");
 
+		SchemaDisplayConfig temporaryRecord = manager.getSchema(collection, TemporaryRecord.DEFAULT_SCHEMA);
+		temporaryRecord = temporaryRecord.withRemovedTableMetadatas("temporaryRecord_default_createdBy", "temporaryRecord_default_createdOn", "temporaryRecord_default_destructionDate", "temporaryRecord_default_content");
+		temporaryRecord = temporaryRecord.withTableMetadataCodes(asList("temporaryRecord_default_title", "temporaryRecord_default_modifiedOn"));
+
 		manager.execute(transaction.build());
 	}
 
@@ -182,7 +191,7 @@ public class CoreMigrationCombo implements ComboMigrationScript {
 
 		@Override
 		protected void migrate(MetadataSchemaTypesBuilder typesBuilder) {
-
+			typesBuilder.getSchemaType(Printable.SCHEMA_TYPE).getDefaultSchema().getMetadata(Printable.JASPERFILE).addValidator(JasperFilePrintableValidator.class);
 			if (Collection.SYSTEM_COLLECTION.equals(typesBuilder.getCollection())) {
 				RolesManager rolesManager = appLayerFactory.getModelLayerFactory().getRolesManager();
 				rolesManager.updateRole(rolesManager.getRole(collection, "ADM").withNewPermissions(asList("core.manageExcelReport", "core.managerTemporaryRecords", "core.seeAllTemporaryRecords")));

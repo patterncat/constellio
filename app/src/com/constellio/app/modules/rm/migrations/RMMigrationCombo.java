@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.constellio.app.modules.rm.wrappers.*;
+import com.constellio.model.entities.records.wrappers.TemporaryRecord;
 import org.apache.commons.io.IOUtils;
 
 import com.constellio.app.entities.modules.ComboMigrationScript;
@@ -26,11 +28,6 @@ import com.constellio.app.entities.schemasDisplay.SchemaDisplayConfig;
 import com.constellio.app.modules.rm.RMEmailTemplateConstants;
 import com.constellio.app.modules.rm.constants.RMTaxonomies;
 import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
-import com.constellio.app.modules.rm.wrappers.ContainerRecord;
-import com.constellio.app.modules.rm.wrappers.Email;
-import com.constellio.app.modules.rm.wrappers.Folder;
-import com.constellio.app.modules.rm.wrappers.Printable;
-import com.constellio.app.modules.rm.wrappers.PrintableLabel;
 import com.constellio.app.modules.rm.wrappers.type.DocumentType;
 import com.constellio.app.services.factories.AppLayerFactory;
 import com.constellio.app.services.schemasDisplay.SchemaTypesDisplayTransactionBuilder;
@@ -189,7 +186,7 @@ public class RMMigrationCombo implements ComboMigrationScript {
 
         userTask = userTask.withTableMetadataCodes(
                 asList("userTask_default_title", "userTask_default_status", "userTask_default_dueDate",
-                        "userTask_default_assignee", "userTask_default_starredByUsers"));
+                        "userTask_default_assignee"));
         transaction.add(userTask);
 
         SchemaDisplayConfig userDocument = manager.getSchema(collection, "userDocument_default");
@@ -199,6 +196,23 @@ public class RMMigrationCombo implements ComboMigrationScript {
         SchemaDisplayConfig container = manager.getSchema(collection, ContainerRecord.DEFAULT_SCHEMA);
         //container = container.withNewFormMetadata(ContainerRecord.DEFAULT_SCHEMA + "_" + ContainerRecord.FILL_RATIO_ENTRED);
         transaction.add(container);
+
+        SchemaDisplayConfig sipArchives = manager.getSchema(collection, SIParchive.SCHEMA);
+        sipArchives = sipArchives.withDisplayMetadataCodes(asList("temporaryRecord_sipArchive_title",
+                        "temporaryRecord_sipArchive_createdBy",
+                        "temporaryRecord_sipArchive_createdOn",
+                        "temporaryRecord_sipArchive_modifiedBy",
+                        "temporaryRecord_sipArchive_modifiedOn",
+                        "temporaryRecord_sipArchive_daysBeforeDestruction",
+                        "temporaryRecord_sipArchive_name",
+                        "temporaryRecord_sipArchive_user"));
+        sipArchives = sipArchives.withNewFormMetadata("temporaryRecord_sipArchive_title")
+                .withNewFormMetadata("temporaryRecord_sipArchive_daysBeforeDestruction")
+                .withNewFormMetadata("temporaryRecord_sipArchive_name")
+                .withNewFormMetadata("temporaryRecord_sipArchive_user");
+        sipArchives.withSearchResultsMetadataCodes(asList("temporaryRecord_sipArchive_title", "temporaryRecord_sipArchive_modifiedOn"));
+        sipArchives.withRemovedTableMetadatas("temporaryRecord_sipArchive_createdBy", "temporaryRecord_sipArchive_createdOn", "temporaryRecord_sipArchive_destructionDate", "temporaryRecord_sipArchive_content");
+        transaction.add(sipArchives);
 
         manager.execute(transaction.build());
     }
