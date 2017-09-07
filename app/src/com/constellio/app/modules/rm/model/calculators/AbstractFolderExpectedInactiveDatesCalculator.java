@@ -81,6 +81,10 @@ public abstract class AbstractFolderExpectedInactiveDatesCalculator extends Abst
 
 			} else if (expectedTransferDate == null && input.inactiveNumberOfYearWhenVariableDelayPeriod != -1) {
 				baseTransferDate = input.decommissioningDate;
+				//TODO Test and enable!
+				//				if (baseTransferDate == null) {
+				//					baseTransferDate = dateSpecifiedInCopyRule;
+				//				}
 
 			} else if (expectedTransferDate == null && copyRule.getActiveRetentionPeriod().isFixed()) {
 				baseTransferDate = input.decommissioningDate;
