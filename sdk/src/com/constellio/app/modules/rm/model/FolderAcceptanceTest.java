@@ -8,6 +8,7 @@ import static com.constellio.app.modules.rm.model.enums.FolderStatus.INACTIVE_DE
 import static com.constellio.app.modules.rm.model.enums.FolderStatus.SEMI_ACTIVE;
 import static com.constellio.app.modules.rm.model.validators.FolderValidator.CATEGORY_CODE;
 import static com.constellio.app.modules.rm.model.validators.FolderValidator.RULE_CODE;
+import static com.constellio.model.entities.schemas.MetadataValueType.DATE;
 import static com.constellio.model.entities.schemas.MetadataValueType.STRING;
 import static com.constellio.sdk.tests.TestUtils.assertThatRecord;
 import static com.constellio.sdk.tests.TestUtils.extractingSimpleCodeAndParameters;
@@ -23,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.constellio.model.entities.schemas.MetadataSchema;
+import org.assertj.core.internal.cglib.core.Local;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.junit.Before;
@@ -2986,6 +2989,264 @@ public class FolderAcceptanceTest extends ConstellioTest {
 		assertThat(folder.getExpectedTransferDate()).isEqualTo(march31_2017);
 	}
 
+	@Test
+	public void testValidateCalculatedDateCaseNumber4() throws Exception {
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("dateDepart").setType(DATE)
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("dateNaissance").setType(DATE);
+			}
+		});
+		MetadataSchema folderDefault = getModelLayerFactory().getMetadataSchemasManager().getSchemaTypes(zeCollection).getDefaultSchema(Folder.SCHEMA_TYPE);
+		RetentionRule rule = records.getRule1();
+		CopyRetentionRule principalRule = principal("888-2-D", PA).setActiveDateMetadata(folderDefault.get("dateDepart").getCode()).setSemiActiveDateMetadata(folderDefault.get("dateNaissance").getCode());
+		CopyRetentionRule secondary = secondary("0-0-D", PA);
+		rule.setCopyRetentionRules(principalRule, secondary);
+		Folder folder = saveAndLoad(principalFolderWithRule(rule)
+				.<LocalDate, Folder>set("dateDepart", new LocalDate(2017, 1, 20))
+				.<LocalDate, Folder>set("dateNaissance", new LocalDate(1970, 6, 25)));
+
+		assertThat(folder.getMainCopyRule()).isEqualTo(principalRule);
+		assertThat(folder.getExpectedTransferDate()).isEqualTo(new LocalDate(1970, 7, 1));
+		assertThat(folder.getExpectedDepositDate()).isEqualTo(new LocalDate(2045, 7, 1));
+	}
+
+	@Test
+	public void testValidateCalculatedDateCaseNumber8To15() throws Exception {
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneeFermetureDelaisOuverALActif").setType(STRING).setInputMask("9999-9999")
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneScolaire").setType(STRING).setInputMask("9999-9999")
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneeDepart").setType(STRING).setInputMask("9999-9999")
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("annneNaissance").setType(DATE);
+			}
+		});
+		MetadataSchema folderDefault = getModelLayerFactory().getMetadataSchemasManager().getSchemaTypes(zeCollection).getDefaultSchema(Folder.SCHEMA_TYPE);
+		RetentionRule rule = records.getRule1();
+		CopyRetentionRule principalRuleRow8 = principal("888-2-D", PA).setActiveDateMetadata(folderDefault.get("anneeFermetureDelaisOuverALActif").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneeFermetureDelaisOuverALActif").getCode());
+		CopyRetentionRule principalRuleRow9 = principal("2-5-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow10 = principal("2-5-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow11 = principal("2-0-C", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow12 = principal("2-0-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow13 = principal("2-0-C", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow14 = principal("75-0-D", PA).setActiveDateMetadata(folderDefault.get("annneNaissance").getCode()).setSemiActiveDateMetadata(folderDefault.get("annneNaissance").getCode());
+		CopyRetentionRule principalRuleRow15 = principal("888-75-D", PA).setActiveDateMetadata(folderDefault.get("anneeDepart").getCode()).setSemiActiveDateMetadata(folderDefault.get("annneNaissance").getCode());
+		CopyRetentionRule secondary = secondary("0-0-D", PA);
+		rule = saveAndLoad(rule.setCopyRetentionRules(
+				principalRuleRow8,
+				principalRuleRow9,
+				principalRuleRow10,
+				principalRuleRow11,
+				principalRuleRow12,
+				principalRuleRow13,
+				principalRuleRow14,
+				principalRuleRow15,
+				secondary
+				));
+
+		Folder folderRow8 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow8.getId())
+				.<String, Folder>set("anneeFermetureDelaisOuverALActif", "2011-2012"));
+
+		assertThat(folderRow8.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow8.getId());
+		assertThat(folderRow8.getExpectedTransferDate()).isEqualTo(new LocalDate(2012,7,1));
+		assertThat(folderRow8.getExpectedDestructionDate()).isEqualTo(new LocalDate(2014, 7, 1));
+
+		Folder folderRow9 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow9.getId())
+				.<String, Folder>set("anneScolaire", "2013-2014"));
+
+		assertThat(folderRow9.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow9.getId());
+		assertThat(folderRow9.getExpectedTransferDate()).isEqualTo(new LocalDate(2016,7,1));
+		assertThat(folderRow9.getExpectedDestructionDate()).isEqualTo(new LocalDate(2017, 7, 1));
+
+		Folder folderRow10 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow10.getId())
+				.<String, Folder>set("anneScolaire", "2009-2010"));
+
+		assertThat(folderRow10.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow10.getId());
+		assertThat(folderRow10.getExpectedTransferDate()).isEqualTo(new LocalDate(2012,7,1));
+		assertThat(folderRow10.getExpectedDestructionDate()).isEqualTo(new LocalDate(2017, 7, 1));
+
+		Folder folderRow11 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow11.getId())
+				.<String, Folder>set("anneScolaire", "2016-2017"));
+
+		assertThat(folderRow11.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow11.getId());
+		assertThat(folderRow11.getExpectedTransferDate()).isEqualTo(new LocalDate(2019,7,1));
+		assertThat(folderRow11.getExpectedDepositDate()).isEqualTo(new LocalDate(2019, 7, 1));
+
+		Folder folderRow12 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow12.getId())
+				.<String, Folder>set("anneScolaire", "2013-2014"));
+
+		assertThat(folderRow12.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow12.getId());
+		assertThat(folderRow12.getExpectedTransferDate()).isEqualTo(new LocalDate(2016,7,1));
+		assertThat(folderRow12.getExpectedDestructionDate()).isEqualTo(new LocalDate(2016, 7, 1));
+
+		Folder folderRow13 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow13.getId())
+				.<String, Folder>set("anneScolaire", "2014-2015"));
+
+		assertThat(folderRow13.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow13.getId());
+		assertThat(folderRow13.getExpectedTransferDate()).isEqualTo(new LocalDate(2017,7,1));
+		assertThat(folderRow13.getExpectedDepositDate()).isEqualTo(new LocalDate(2017, 7, 1));
+
+		Folder folderRow14 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow14.getId())
+				.<LocalDate, Folder>set("annneNaissance", new LocalDate(1975,1,31)));
+
+		assertThat(folderRow14.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow14.getId());
+		assertThat(folderRow14.getExpectedTransferDate()).isEqualTo(new LocalDate(2050,7,1));
+		assertThat(folderRow14.getExpectedDestructionDate()).isEqualTo(new LocalDate(2050, 7, 1));
+
+		Folder folderRow15 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow15.getId())
+				.<LocalDate, Folder>set("annneNaissance", new LocalDate(1937,7,19))
+				.<String, Folder>set("anneeDepart", "1997-1998"));
+
+		assertThat(folderRow15.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow15.getId());
+		assertThat(folderRow15.getExpectedTransferDate()).isEqualTo(new LocalDate(1938, 7, 1));
+		assertThat(folderRow15.getExpectedDestructionDate()).isEqualTo(new LocalDate(2013, 7, 1));
+
+	}
+
+	@Test
+	public void testValidateCalculatedDateCaseNumber19To21() throws Exception{
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneScolaire").setType(STRING).setInputMask("9999-9999")
+						.defineDataEntry().asManual();
+			}
+		});
+		MetadataSchema folderDefault = getModelLayerFactory().getMetadataSchemasManager().getSchemaTypes(zeCollection).getDefaultSchema(Folder.SCHEMA_TYPE);
+
+		RetentionRule rule = records.getRule1();
+		CopyRetentionRule principalRuleRow19 = principal("999-0-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow20 = principal("888-80-T", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule principalRuleRow21 = principal("2-8-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule secondary = secondary("0-0-D", PA);
+
+		rule = saveAndLoad(rule.setCopyRetentionRules(
+				principalRuleRow19,
+				principalRuleRow20,
+				principalRuleRow21,
+				secondary
+		));
+
+		Folder folderRow19 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow19.getId())
+				.<String, Folder>set("anneScolaire", "2016-2017"));
+
+		assertThat(folderRow19.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow19.getId());
+		assertThat(folderRow19.getExpectedTransferDate()).isEqualTo(null);
+		assertThat(folderRow19.getExpectedDestructionDate()).isEqualTo(null);
+
+		Folder folderRow20 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow20.getId())
+				.<String, Folder>set("anneScolaire", "1974-1975"));
+
+		assertThat(folderRow20.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow20.getId());
+		assertThat(folderRow20.getExpectedTransferDate()).isEqualTo(new LocalDate(1977,7,1));
+		assertThat(folderRow20.getExpectedDepositDate()).isEqualTo(new LocalDate(2057, 7, 1));
+
+		Folder folderRow21 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow21.getId())
+				.<String, Folder>set("anneScolaire", "2004-2005"));
+
+		assertThat(folderRow21.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow21.getId());
+		assertThat(folderRow21.getExpectedTransferDate()).isEqualTo(new LocalDate(2007,7,1));
+		assertThat(folderRow21.getExpectedDestructionDate()).isEqualTo(new LocalDate(2015, 7, 1));
+	}
+
+	@Test
+	public void testValidateCalculatedDateCaseNumber25To26() throws Exception{
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneScolaire").setType(STRING).setInputMask("9999-9999")
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("annneNaissance").setType(DATE);
+			}
+		});
+		MetadataSchema folderDefault = getModelLayerFactory().getMetadataSchemasManager().getSchemaTypes(zeCollection).getDefaultSchema(Folder.SCHEMA_TYPE);
+
+		RetentionRule rule = records.getRule1();
+		CopyRetentionRule principalRuleRow25 = principal("888-75-T", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("annneNaissance").getCode());
+		CopyRetentionRule principalRuleRow26 = principal("59-0-D", PA).setActiveDateMetadata(folderDefault.get("anneScolaire").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneScolaire").getCode());
+		CopyRetentionRule secondary = secondary("0-0-D", PA);
+
+		rule = saveAndLoad(rule.setCopyRetentionRules(
+				principalRuleRow25,
+				principalRuleRow26,
+				secondary
+		));
+
+		Folder folderRow25 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow25.getId())
+				.<String, Folder>set("anneScolaire", "2012-2013")
+				.<LocalDate, Folder>set("annneNaissance", new LocalDate(1999,9,2)));
+
+		assertThat(folderRow25.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow25.getId());
+		assertThat(folderRow25.getExpectedTransferDate()).isEqualTo(new LocalDate(2000,7,1));
+		assertThat(folderRow25.getExpectedDepositDate()).isEqualTo(new LocalDate(2075, 7, 1));
+
+		Folder folderRow26 = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow26.getId())
+				.<String, Folder>set("anneScolaire", "2016-2017"));
+
+		assertThat(folderRow26.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow26.getId());
+		assertThat(folderRow26.getExpectedTransferDate()).isEqualTo(new LocalDate(2076,7,1));
+		assertThat(folderRow26.getExpectedDestructionDate()).isEqualTo(new LocalDate(2076, 7, 1));
+	}
+
+	@Test
+	public void testValidateCalculatedDateCaseNumber30() throws Exception{
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneeDepart").setType(DATE)
+						.defineDataEntry().asManual();
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("anneeNaissance").setType(DATE);
+			}
+		});
+		MetadataSchema folderDefault = getModelLayerFactory().getMetadataSchemasManager().getSchemaTypes(zeCollection).getDefaultSchema(Folder.SCHEMA_TYPE);
+		RetentionRule rule = records.getRule1();
+		CopyRetentionRule principalRuleRow30 = principal("888-75-D", PA).setActiveDateMetadata(folderDefault.get("anneeDepart").getCode()).setSemiActiveDateMetadata(folderDefault.get("anneeNaissance").getCode());
+		CopyRetentionRule secondary = secondary("0-0-D", PA);
+		rule.setCopyRetentionRules(principalRuleRow30, secondary);
+
+		Folder folder = saveAndLoad(principalFolderWithRule(rule)
+				.setOpenDate(new LocalDate())
+				.setMainCopyRuleEntered(principalRuleRow30.getId())
+				.<LocalDate, Folder>set("anneeDepart", new LocalDate(2012, 6, 30))
+				.<LocalDate, Folder>set("anneeNaissance", new LocalDate(1995, 8, 17)));
+
+		assertThat(folder.getMainCopyRuleIdEntered()).isEqualTo(principalRuleRow30.getId());
+		assertThat(folder.getExpectedTransferDate()).isEqualTo(new LocalDate(1996, 7, 1));
+		assertThat(folder.getExpectedDestructionDate()).isEqualTo(new LocalDate(2071, 7, 1));
+	}
+
 	// -------------------------------------------------------------------------
 
 	private LocalDate march1(int year) {
@@ -3056,6 +3317,25 @@ public class FolderAcceptanceTest extends ConstellioTest {
 		return folder;
 	}
 
+	private Folder principalFolderWithRule(RetentionRule rule) {
+		if (!transaction.getRecords().isEmpty()) {
+			try {
+				recordServices.execute(transaction);
+			} catch (RecordServicesException e) {
+				throw new RuntimeException(e);
+			}
+			transaction = new Transaction();
+		}
+
+		Folder folder = rm.newFolder();
+		folder.setAdministrativeUnitEntered(aPrincipalAdminUnit);
+		folder.setCategoryEntered(records.categoryId_X110);
+		folder.setTitle("Ze folder");
+		folder.setRetentionRuleEntered(rule.getId());
+		folder.setCopyStatusEntered(CopyType.PRINCIPAL);
+		return folder;
+	}
+
 	private Folder secondaryFolderWithZeRule() {
 
 		if (!transaction.getRecords().isEmpty()) {
@@ -3080,6 +3360,11 @@ public class FolderAcceptanceTest extends ConstellioTest {
 			throws RecordServicesException {
 		recordServices.add(folder.getWrappedRecord());
 		return rm.getFolder(folder.getId());
+	}
+
+	private RetentionRule saveAndLoad(RetentionRule rule) throws RecordServicesException {
+		recordServices.add(rule);
+		return rm.getRetentionRule(rule.getId());
 	}
 
 	private RetentionRule givenRuleWithResponsibleAdminUnitsFlagAndCopyRules(CopyRetentionRule... rules) {
