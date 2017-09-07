@@ -98,7 +98,9 @@ public abstract class AbstractFolderExpectedInactiveDatesCalculator extends Abst
 			return null;
 
 		} else if (input.archivisticStatus.isSemiActive()) {
-			return LangUtils.max(calculatedInactiveDate, input.decommissioningDate);
+			//TODO VERIFY IF OK
+			//return LangUtils.max(calculatedInactiveDate, input.decommissioningDate);
+			return calculatedInactiveDate;
 
 		} else {
 			return LangUtils.max(calculatedInactiveDate, expectedTransferDate);
@@ -135,23 +137,27 @@ public abstract class AbstractFolderExpectedInactiveDatesCalculator extends Abst
 		public LocalDate getAdjustedBaseDateFromSemiActiveDelay(CopyRetentionRule copy, String yearEnd) {
 			String semiActiveMetadata = copy.getSemiActiveDateMetadata();
 
-			if (semiActiveMetadata != null && semiActiveMetadata.equals(copy.getActiveDateMetadata())) {
+			//if (semiActiveMetadata != null && semiActiveMetadata.equals(copy.getActiveDateMetadata())) {
+			//	return null;
+
+			//} else {
+			LocalDate date = datesAndDateTimesParam
+					.getDate(semiActiveMetadata, datesAndDateTimes, yearEnd, calculatedMetadatasBasedOnFirstTimerangePart);
+			if (date == null) {
 				return null;
-
 			} else {
-				LocalDate date = datesAndDateTimesParam
-						.getDate(semiActiveMetadata, datesAndDateTimes, yearEnd, calculatedMetadatasBasedOnFirstTimerangePart);
-				if (date == null) {
-					return null;
-				} else {
 
-					if (!copy.isIgnoreActivePeriod()) {
-						date = calculateExpectedTransferDate(copy, date, semiActiveNumberOfYearWhenVariableDelayPeriod);
+				if (!copy.isIgnoreActivePeriod()) {
+					LocalDate transferDate = calculateExpectedTransferDate(copy, date,
+							semiActiveNumberOfYearWhenVariableDelayPeriod);
+					if (transferDate != null) {
+						date = transferDate;
 					}
-					date = adjustToFinancialYear(date);
-					return date;
 				}
+				date = adjustToFinancialYear(date);
+				return date;
 			}
+			//}
 		}
 	}
 }

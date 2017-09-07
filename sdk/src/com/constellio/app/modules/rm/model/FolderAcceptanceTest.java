@@ -1390,6 +1390,60 @@ public class FolderAcceptanceTest extends ConstellioTest {
 	}
 
 	@Test
+	public void givenSameMetadatasForActiveAndSemiActiveWithZeroSemiActivePeriodThenOk()
+			throws Exception {
+
+		givenConfig(RMConfigs.DECOMMISSIONING_DATE_BASED_ON, CLOSE_DATE);
+		givenConfig(RMConfigs.CALCULATED_CLOSING_DATE, true);
+		givenConfig(RMConfigs.YEAR_END_DATE, "03/31");
+		givenConfig(RMConfigs.REQUIRED_DAYS_BEFORE_YEAR_END_FOR_NOT_ADDING_A_YEAR, 60);
+		givenConfig(RMConfigs.CALCULATED_CLOSING_DATE_NUMBER_OF_YEAR_WHEN_FIXED_RULE, 1);
+
+		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
+			@Override
+			public void alter(MetadataSchemaTypesBuilder types) {
+				types.getSchema(Folder.DEFAULT_SCHEMA).create("dateA").setType(MetadataValueType.DATE);
+			}
+		});
+
+		//Scénario #2 : Délai “5-25-C”. Actif basée sur année financière, semi-actif laissé vide
+
+		RetentionRule rule2 = rm.getRetentionRule(records.ruleId_2);
+		rule2.setCopyRetentionRules(asList(
+				copyBuilder.newPrincipal(asList(records.PA), "49-0-D").setActiveDateMetadata("dateA")
+						.setSemiActiveDateMetadata("dateA"),
+				copyBuilder.newSecondary(asList(records.MD), "42-42-D")
+		));
+
+		recordServices.update(rule2);
+
+		Builder<Folder> folderBuilder = new Builder<Folder>() {
+			@Override
+			public Folder build() {
+				Folder folder = rm.newFolder();
+				folder.setAdministrativeUnitEntered(records.unitId_10a);
+				folder.setCategoryEntered(records.categoryId_X13);
+				folder.setTitle("Ze folder");
+				folder.setRetentionRuleEntered(records.ruleId_2);
+				folder.setCopyStatusEntered(CopyType.PRINCIPAL);
+				folder.setMediumTypes(MD, PA);
+				return folder;
+			}
+		};
+
+		Folder folder1 = transaction.add(folderBuilder.build());
+		folder1.set("dateA", january1(2000));
+		folder1.setOpenDate(january1(1990));
+		folder1.setCloseDateEntered(january1(1991));
+
+		recordServices.execute(transaction);
+
+		assertThat(folder1.getExpectedTransferDate()).isNull();
+		assertThat(folder1.getExpectedDestructionDate()).isEqualTo(date(2049, 3, 31));
+
+	}
+
+	@Test
 	public void givenRuleBasedOnSameActiveAndSemiActiveMetadataIgnoringActivePeriodThenValidCalculatedDates()
 			throws Exception {
 
@@ -1459,27 +1513,27 @@ public class FolderAcceptanceTest extends ConstellioTest {
 
 		assertThat(folder1.getCloseDate()).isEqualTo(march31(2000));
 		assertThat(folder1.getExpectedTransferDate()).isEqualTo(march31(2005));
-		assertThat(folder1.getExpectedDepositDate()).isEqualTo(march31(2030));
+		assertThat(folder1.getExpectedDepositDate()).isEqualTo(march31(2025));
 
 		assertThat(folder2.getCloseDate()).isEqualTo(march31(2001));
 		assertThat(folder2.getExpectedTransferDate()).isEqualTo(march31(2015));
-		assertThat(folder2.getExpectedDepositDate()).isEqualTo(march31(2040));
+		assertThat(folder2.getExpectedDepositDate()).isEqualTo(march31(2035));
 
 		assertThat(folder3.getCloseDate()).isEqualTo(march31(2001));
 		assertThat(folder3.getExpectedTransferDate()).isEqualTo(march31(1995));
-		assertThat(folder3.getExpectedDepositDate()).isEqualTo(march31(2020));
+		assertThat(folder3.getExpectedDepositDate()).isEqualTo(march31(2015));
 
 		assertThat(folder4.getCloseDate()).isEqualTo(march31(2002));
 		assertThat(folder4.getExpectedTransferDate()).isEqualTo(march31(2006));
-		assertThat(folder4.getExpectedDepositDate()).isEqualTo(march31(2031));
+		assertThat(folder4.getExpectedDepositDate()).isEqualTo(march31(2026));
 
 		assertThat(folder5.getCloseDate()).isEqualTo(march31(2001));
 		assertThat(folder5.getExpectedTransferDate()).isEqualTo(march31(2016));
-		assertThat(folder5.getExpectedDepositDate()).isEqualTo(march31(2041));
+		assertThat(folder5.getExpectedDepositDate()).isEqualTo(march31(2036));
 
 		assertThat(folder6.getCloseDate()).isEqualTo(march31(2002));
 		assertThat(folder6.getExpectedTransferDate()).isEqualTo(march31(1995));
-		assertThat(folder6.getExpectedDepositDate()).isEqualTo(march31(2020));
+		assertThat(folder6.getExpectedDepositDate()).isEqualTo(march31(2015));
 	}
 
 	@Test
@@ -2223,6 +2277,7 @@ public class FolderAcceptanceTest extends ConstellioTest {
 		assertThat(folder5.getExpectedDepositDate()).isEqualTo(march31(2035));
 
 		assertThat(folder6.getCloseDate()).isEqualTo(march31(2001));
+		assertThat(folder6.getActualTransferDate()).isEqualTo(date(2065, 1, 1));
 		assertThat(folder6.getExpectedTransferDate()).isNull();
 		assertThat(folder6.getExpectedDepositDate()).isEqualTo(march31(2065));
 
