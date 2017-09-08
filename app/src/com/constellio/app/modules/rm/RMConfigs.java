@@ -13,8 +13,10 @@ import com.constellio.app.modules.rm.model.enums.CompleteDatesWhenAddingFolderWi
 import com.constellio.app.modules.rm.model.enums.DecommissioningDateBasedOn;
 import com.constellio.app.modules.rm.model.enums.DefaultTabInFolderDisplay;
 import com.constellio.app.modules.rm.model.enums.DocumentsTypeChoice;
+import com.constellio.model.entities.configs.ConfigsProvider;
 import com.constellio.model.entities.configs.SystemConfiguration;
 import com.constellio.model.entities.configs.SystemConfigurationGroup;
+import com.constellio.model.entities.configs.VisibleEvaluator;
 import com.constellio.model.services.configs.SystemConfigurationsManager;
 
 public class RMConfigs {
@@ -23,6 +25,10 @@ public class RMConfigs {
 
 	public enum DecommissioningPhase {
 		NEVER, ON_DEPOSIT, ON_TRANSFER_OR_DEPOSIT
+	}
+
+	public enum DatesCalculatorChoice {
+		CHOICE1, CHOICE2, CHOICE3
 	}
 
 	static List<SystemConfiguration> configurations = new ArrayList<>();
@@ -82,7 +88,7 @@ public class RMConfigs {
 			AGENT_EDIT_USER_DOCUMENTS, AGENT_BACKUP_RETENTION_PERIOD_IN_DAYS, AGENT_TOKEN_DURATION_IN_HOURS, AGENT_READ_ONLY_WARNING, AGENT_DISABLED_UNTIL_FIRST_CONNECTION, AGENT_MOVE_IMPORTED_FILES_TO_TRASH;
 
 	// other
-	public static final SystemConfiguration OPEN_HOLDER;
+	public static final SystemConfiguration OPEN_HOLDER, DATES_CALCULATOR_CHOICE;
 
 	static {
 		//SystemConfigurationGroup beta = new SystemConfigurationGroup(ID, "beta");
@@ -123,7 +129,13 @@ public class RMConfigs {
 		// Delays are computed from the opening date (if true), or the closing date (if false)
 		add(DECOMMISSIONING_DATE_BASED_ON = decommissioning
 				.createEnum("decommissioningDateBasedOn", DecommissioningDateBasedOn.class)
-				.withDefaultValue(DecommissioningDateBasedOn.CLOSE_DATE).withReIndexionRequired());
+				.withDefaultValue(DecommissioningDateBasedOn.CLOSE_DATE).withReIndexionRequired()
+		.withVisibleEvaluator(new VisibleEvaluator() {
+			@Override
+			public boolean isVisible(ConfigsProvider configsProvider) {
+				return configsProvider.<Integer>getValue(CALCULATED_INACTIVE_DATE_NUMBER_OF_YEAR_WHEN_VARIABLE_PERIOD) != 1;
+			}
+		}));
 
 		// End of the civil year for the purposes of calculating the delays (MM/DD)
 		add(YEAR_END_DATE = decommissioning.createString("yearEndDate").withDefaultValue("12/31"));
@@ -233,6 +245,9 @@ public class RMConfigs {
 
 		add(DOCUMENTS_TYPES_CHOICE = others.createEnum("documentsTypeChoice", DocumentsTypeChoice.class)
 				.withDefaultValue(DocumentsTypeChoice.LIMIT_TO_SAME_DOCUMENTS_TYPES_OF_RETENTION_RULES));
+
+		add(DATES_CALCULATOR_CHOICE = others.createEnum("dateCalculatorChoice", DatesCalculatorChoice.class).
+		withDefaultValue(DatesCalculatorChoice.CHOICE1));
 
 		add(WORKFLOWS_ENABLED = others.createBooleanFalseByDefault("workflowsEnabled"));
 

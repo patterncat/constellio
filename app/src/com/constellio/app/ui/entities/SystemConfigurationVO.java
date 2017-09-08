@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import com.constellio.model.entities.configs.ConfigsProvider;
+import com.constellio.model.entities.configs.VisibleEvaluator;
 import org.apache.commons.io.FileUtils;
 
 import com.constellio.app.ui.framework.components.fields.upload.TempFileUpload;
@@ -21,12 +23,13 @@ public class SystemConfigurationVO implements Serializable {
 	Class<? extends Enum<?>> values;
 	private boolean updated;
 	private String tmpFilePath;
+	private VisibleEvaluator visibleEvaluator;
 
 	boolean rebootRequired;
 	boolean hiddenValue;
 
 	public SystemConfigurationVO(String code, Object value,
-			SystemConfigurationType type, Class<? extends Enum<?>> values, boolean rebootRequired, boolean hiddenValue) {
+			SystemConfigurationType type, Class<? extends Enum<?>> values, boolean rebootRequired, boolean hiddenValue, VisibleEvaluator visibleEvaluator) {
 		this.code = code;
 		this.value = value;
 		this.type = type;
@@ -34,6 +37,23 @@ public class SystemConfigurationVO implements Serializable {
 		this.updated = false;
 		this.rebootRequired = rebootRequired;
 		this.hiddenValue = hiddenValue;
+		this.visibleEvaluator = visibleEvaluator;
+	}
+
+	public VisibleEvaluator getVisibleEvaluator() {
+		return visibleEvaluator;
+	}
+
+	public void setVisibleEvaluator(VisibleEvaluator visibleEvaluator) {
+		this.visibleEvaluator = visibleEvaluator;
+	}
+
+	public boolean visibleEvaluator(ConfigsProvider configsProvider) {
+		if(this.visibleEvaluator != null) {
+			return this.visibleEvaluator.isVisible(configsProvider);
+		} else {
+			return true;
+		}
 	}
 
 	public String getCode() {

@@ -75,11 +75,12 @@ public class ConfigManagementViewImpl extends BaseViewImpl implements ConfigMana
 				groupLayout.setSizeFull();
 				groupLayout.setSpacing(true);
 				groupLayout.setId(groupCode);
-				
+
 				for (int i = 0; i < configs.size(); i++) {
 					SystemConfigurationVO currentConfigurationVO = configs.get(i);
 					String fieldCaption = presenter.getLabel(groupCode, currentConfigurationVO.getCode());
 					Field<?> field = createField(currentConfigurationVO);
+					field.setVisible(currentConfigurationVO.visibleEvaluator(presenter.getConfigsProvider()));
 					field.setId(groupCode + i);
 					field.addStyleName(CONFIG_ELEMENT_VALUE);
 					field.addValueChangeListener(new ValueChangeListener() {

@@ -25,13 +25,16 @@ public class SystemConfiguration implements Serializable {
 	boolean hiddenValue;
 	boolean requireReIndexing;
 
+
 	Class<? extends Enum<?>> enumClass;
 
 	Class<? extends SystemConfigurationScript> scriptClass;
 
+	VisibleEvaluator visibleEvaluator;
+
 	SystemConfiguration(SystemConfigurationType type, String module, String configGroupCode, String code, Object defaultValue,
 						Class<? extends Enum<?>> enumClass, Class<? extends SystemConfigurationScript> scriptClass, boolean hidden,
-						boolean rebootRequired, boolean hiddenValue, boolean requireReIndexing) {
+						boolean rebootRequired, boolean hiddenValue, boolean requireReIndexing, VisibleEvaluator visibleEvaluator) {
 		this.type = type;
 		this.configGroupCode = configGroupCode;
 		this.code = code;
@@ -44,6 +47,15 @@ public class SystemConfiguration implements Serializable {
 		this.hiddenValue = hiddenValue;
 		this.propertyKey = configGroupCode + "_" + code;
 		this.requireReIndexing = requireReIndexing;
+		this.visibleEvaluator = visibleEvaluator;
+	}
+
+	public VisibleEvaluator getVisibleEvaluator() {
+		return visibleEvaluator;
+	}
+
+	public void setVisibleEvaluator(VisibleEvaluator visibleEvaluator) {
+		this.visibleEvaluator = visibleEvaluator;
 	}
 
 	public SystemConfigurationType getType() {
@@ -76,13 +88,13 @@ public class SystemConfiguration implements Serializable {
 
 	public SystemConfiguration withDefaultValue(Object value) {
 		return new SystemConfiguration(type, module, configGroupCode, code, value, enumClass, scriptClass, hidden, rebootRequired,
-				hiddenValue, requireReIndexing);
+				hiddenValue, requireReIndexing, visibleEvaluator);
 
 	}
 
 	public SystemConfiguration scriptedBy(Class<? extends SystemConfigurationScript> scriptClass) {
 		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, hidden,
-				rebootRequired, hiddenValue, requireReIndexing);
+				rebootRequired, hiddenValue, requireReIndexing, visibleEvaluator);
 	}
 
 	public <T> ConfigDependency<T> dependency() {
@@ -110,23 +122,29 @@ public class SystemConfiguration implements Serializable {
 
 	public SystemConfiguration whichIsHidden() {
 		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, true,
-				rebootRequired, hiddenValue, requireReIndexing);
+				rebootRequired, hiddenValue, requireReIndexing, visibleEvaluator);
 	}
 
 	public SystemConfiguration whichRequiresReboot() {
 		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, hidden,
-				true, hiddenValue, requireReIndexing);
+				true, hiddenValue, requireReIndexing, visibleEvaluator);
 	}
 
 	public SystemConfiguration whichHasHiddenValue() {
 		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, hidden,
-				rebootRequired, true, requireReIndexing);
+				rebootRequired, true, requireReIndexing, visibleEvaluator);
 	}
 
 	public SystemConfiguration withReIndexionRequired() {
 		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, hidden,
-				rebootRequired, hiddenValue, true);
+				rebootRequired, hiddenValue, true, visibleEvaluator);
 	}
+
+	public SystemConfiguration withVisibleEvaluator(VisibleEvaluator evaluator) {
+		return new SystemConfiguration(type, module, configGroupCode, code, defaultValue, enumClass, scriptClass, hidden,
+				rebootRequired, hiddenValue, true, evaluator);
+	}
+
 
 	public boolean isHidden() {
 		return hidden;

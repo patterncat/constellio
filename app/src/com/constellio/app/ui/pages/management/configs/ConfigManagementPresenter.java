@@ -10,10 +10,12 @@ import com.constellio.app.ui.entities.SystemConfigurationVO;
 import com.constellio.app.ui.framework.data.SystemConfigurationGroupdataProvider;
 import com.constellio.app.ui.pages.base.BasePresenter;
 import com.constellio.model.entities.CorePermissions;
+import com.constellio.model.entities.configs.ConfigsProvider;
 import com.constellio.model.entities.configs.SystemConfiguration;
 import com.constellio.model.entities.records.wrappers.User;
 import com.constellio.model.frameworks.validation.ValidationErrors;
 import com.constellio.model.services.configs.SystemConfigurationsManager;
+import org.apache.commons.configuration.DefaultConfigurationBuilder;
 
 public class ConfigManagementPresenter extends BasePresenter<ConfigManagementView> {
 	
@@ -92,6 +94,15 @@ public class ConfigManagementPresenter extends BasePresenter<ConfigManagementVie
 			}
 		}
 		return reindexingRequired;
+}
+
+	public ConfigsProvider getConfigsProvider() {
+		return new ConfigsProvider() {
+			@Override
+			public <T> T getValue(SystemConfiguration configuration) {
+				return modelLayerFactory.getSystemConfigurationsManager().getValue(configuration);
+			}
+		};
 	}
 
 	private String buildErrorMessage(ValidationErrors validationErrors) {

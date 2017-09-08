@@ -13,7 +13,9 @@ import com.constellio.app.ui.entities.SystemConfigurationVO;
 import com.constellio.app.ui.framework.builders.SystemConfigurationToVOBuilder;
 import com.constellio.model.entities.configs.SystemConfiguration;
 import com.constellio.model.entities.configs.SystemConfigurationGroup;
+import com.constellio.model.entities.schemas.ConfigProvider;
 import com.constellio.model.services.configs.SystemConfigurationsManager;
+import com.constellio.model.services.factories.ModelLayerFactory;
 
 public class SystemConfigurationGroupdataProvider extends AbstractDataProvider {
 	
@@ -25,6 +27,8 @@ public class SystemConfigurationGroupdataProvider extends AbstractDataProvider {
 			initConfigs();
 		}
 	}
+
+	ModelLayerFactory modelLayerFactory;
 
 	private void initConfigs() {
 		ConstellioFactories constellioFactories = ConstellioFactories.getInstance();
@@ -44,6 +48,7 @@ public class SystemConfigurationGroupdataProvider extends AbstractDataProvider {
 			}
 			systemConfigurationGroupVOSortedMap.put(group.getCode(), new SystemConfigurationGroupVO(group.getCode(), sysConfigGroupVOList));
 		}
+		modelLayerFactory = constellioFactories.getModelLayerFactory();
 	}
 
 	public int size() {
