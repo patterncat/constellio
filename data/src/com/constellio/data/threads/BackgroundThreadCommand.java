@@ -55,7 +55,7 @@ public class BackgroundThreadCommand implements Runnable {
 			}
 		}
 
-		synchronized (configuration.getId().intern()) {
+		//synchronized (configuration.getId().intern()) {
 			try {
 
 				while (!systemStarted.get() && !stopRequested.get()) {
@@ -82,7 +82,7 @@ public class BackgroundThreadCommand implements Runnable {
 			} finally {
 				isRunning = false;
 			}
-		}
+		//}
 
 	}
 
