@@ -1,47 +1,34 @@
 package com.constellio.model.services.event;
 
-import com.constellio.data.dao.dto.records.RecordsFlushing;
-import com.constellio.data.dao.dto.records.TransactionDTO;
-import com.constellio.data.dao.services.bigVault.RecordDaoException;
-import com.constellio.data.dao.services.bigVault.SearchResponseIterator;
-import com.constellio.data.dao.services.records.RecordDao;
-import com.constellio.data.io.services.facades.IOServices;
-import com.constellio.data.io.services.zip.ZipService;
-import com.constellio.data.io.services.zip.ZipServiceException;
-import com.constellio.data.utils.TimeProvider;
-import com.constellio.model.entities.records.Record;
-import com.constellio.model.entities.records.wrappers.Event;
-import com.constellio.model.entities.schemas.Metadata;
-import com.constellio.model.entities.schemas.MetadataSchema;
-import com.constellio.model.entities.schemas.MetadataSchemaTypes;
-import com.constellio.model.entities.schemas.Schemas;
-import com.constellio.model.services.factories.ModelLayerFactory;
-import com.constellio.model.services.migrations.ConstellioEIMConfigs;
-import com.constellio.model.services.schemas.MetadataSchemasManager;
-import com.constellio.model.services.search.SearchServices;
-import com.constellio.model.services.search.query.logical.LogicalSearchQuery;
-import com.constellio.model.services.search.query.logical.condition.LogicalSearchCondition;
-import com.constellio.model.services.search.query.logical.criteria.CriteriaUtils;
-import com.sun.xml.internal.txw2.output.IndentingXMLStreamWriter;
-import org.apache.commons.collections.CollectionUtils;
+import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.fromEveryTypesOfEveryCollection;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.stream.XMLOutputFactory;
+
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.jetbrains.annotations.NotNull;
 import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.constellio.model.services.search.query.logical.LogicalSearchQueryOperators.fromEveryTypesOfEveryCollection;
+import com.constellio.data.dao.dto.records.RecordsFlushing;
+import com.constellio.data.dao.dto.records.TransactionDTO;
+import com.constellio.data.dao.services.bigVault.RecordDaoException;
+import com.constellio.data.dao.services.records.RecordDao;
+import com.constellio.data.io.services.facades.IOServices;
+import com.constellio.data.io.services.zip.ZipService;
+import com.constellio.data.utils.TimeProvider;
+import com.constellio.model.entities.records.wrappers.Event;
+import com.constellio.model.entities.schemas.Schemas;
+import com.constellio.model.services.factories.ModelLayerFactory;
+import com.constellio.model.services.migrations.ConstellioEIMConfigs;
+import com.constellio.model.services.schemas.MetadataSchemasManager;
+import com.constellio.model.services.search.query.logical.LogicalSearchQuery;
+import com.constellio.model.services.search.query.logical.condition.LogicalSearchCondition;
+import com.constellio.model.services.search.query.logical.criteria.CriteriaUtils;
 
 public class EventService implements Runnable {
     ModelLayerFactory modelayerFactory;
@@ -101,6 +88,7 @@ public class EventService implements Runnable {
         removeOldEventFromSolr();
     }
 
+    /*
     private void closeFile(File file, IndentingXMLStreamWriter indentingXMLStreamWriter, LocalDateTime localDateTime, String fileName, OutputStream fileStreamToClose) {
 
         File zipFile = null;
@@ -143,7 +131,7 @@ public class EventService implements Runnable {
             ioServices.deleteQuietly(zipFile);
             ioServices.deleteQuietly(file);
         }
-    }
+    }*/
 
     public String dateAsFileName(LocalDateTime localDateTime) {
 
@@ -170,7 +158,7 @@ public class EventService implements Runnable {
         List<Event> eventList = new ArrayList<>();
         LocalDateTime lastDayTimeArchived = getLastDayTimeArchived();
         File currentFile = null;
-        if(lastDayTimeArchived == null || lastDayTimeArchived.compareTo(getArchivedUntilLocalDate()) < 0) {
+        /*if(lastDayTimeArchived == null || lastDayTimeArchived.compareTo(getArchivedUntilLocalDate()) < 0) {
             SearchServices searchServices = modelayerFactory.newSearchServices();
             LogicalSearchQuery logicalSearchQuery = getEventAfterLastArchivedDayAndBeforeLastDayToArchiveLogicalSearchQuery();
 
@@ -242,7 +230,7 @@ public class EventService implements Runnable {
             }
 
 
-        }
+        }*/
 
         return eventList;
     }
