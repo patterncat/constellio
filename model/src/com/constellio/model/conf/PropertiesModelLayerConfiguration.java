@@ -84,6 +84,10 @@ public class PropertiesModelLayerConfiguration extends PropertiesConfiguration i
 			setDuration("unreferencedContentsThread.delayBeforeDeleting", duration);
 		}
 
+		public void setExceptionWhenCalculatorOrValidatorNotFound(boolean value) {
+			setBoolean("metadatas.exceptionWhenCalculatorOrValidatorNotFound", value);
+		}
+
 	}
 
 	@Override
@@ -134,6 +138,10 @@ public class PropertiesModelLayerConfiguration extends PropertiesConfiguration i
 
 	public Duration getTokenRemovalThreadDelayBetweenChecks() {
 		return getDuration("tokenRemovalThread.delayBetweenChecks", Duration.standardHours(1));
+	}
+
+	public boolean isExceptionWhenCalculatorOrValidatorNotFound() {
+		return getBoolean("metadatas.exceptionWhenCalculatorOrValidatorNotFound", true);
 	}
 
 	@Override

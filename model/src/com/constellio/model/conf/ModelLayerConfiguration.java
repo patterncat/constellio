@@ -62,4 +62,5 @@ public interface ModelLayerConfiguration {
 
 	int getReindexingThreadBatchSize();
 
+	boolean isExceptionWhenCalculatorOrValidatorNotFound();
 }

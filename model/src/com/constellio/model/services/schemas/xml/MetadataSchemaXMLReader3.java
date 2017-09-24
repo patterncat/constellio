@@ -39,6 +39,7 @@ import com.constellio.model.services.records.extractions.MetadataPopulatorPersis
 import com.constellio.model.services.schemas.MetadataSchemasManagerRuntimeException;
 import com.constellio.model.services.schemas.builders.MetadataAccessRestrictionBuilder;
 import com.constellio.model.services.schemas.builders.MetadataBuilder;
+import com.constellio.model.services.schemas.builders.MetadataBuilderRuntimeException.CannotInstanciateClass;
 import com.constellio.model.services.schemas.builders.MetadataPopulateConfigsBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaBuilder;
 import com.constellio.model.services.schemas.builders.MetadataSchemaTypeBuilder;
@@ -99,26 +100,26 @@ public class MetadataSchemaXMLReader3 {
 		schemaTypeBuilder.setReadOnlyLocked(getBooleanFlagValueWithFalseAsDefaultValue(element, "readOnlyLocked"));
 		schemaTypeBuilder.setSecurity(getBooleanFlagValueWithFalseAsDefaultValue(element, "security"));
 		schemaTypeBuilder.setInTransactionLog(getBooleanFlagValueWithTrueAsDefaultValue(element, "inTransactionLog"));
-		parseDefaultSchema(element, schemaTypeBuilder, typesBuilder, collectionSchema);
-		parseCustomSchemas(element, schemaTypeBuilder, collectionSchema);
+		parseDefaultSchema(element, schemaTypeBuilder, typesBuilder, collectionSchema, modelLayerFactory);
+		parseCustomSchemas(element, schemaTypeBuilder, collectionSchema, modelLayerFactory);
 		return schemaTypeBuilder.build(typesFactory, modelLayerFactory);
 	}
 
 	private void parseCustomSchemas(Element root, MetadataSchemaTypeBuilder schemaTypeBuilder,
-			MetadataSchemaBuilder collectionSchema) {
+			MetadataSchemaBuilder collectionSchema, ModelLayerFactory modelLayerFactory) {
 		Element customSchemasElement = root.getChild("customSchemas");
 		for (Element schemaElement : customSchemasElement.getChildren("schema")) {
-			parseSchema(schemaTypeBuilder, schemaElement, collectionSchema);
+			parseSchema(schemaTypeBuilder, schemaElement, collectionSchema, modelLayerFactory);
 		}
 	}
 
 	private void parseSchema(MetadataSchemaTypeBuilder schemaTypeBuilder, Element schemaElement,
-			MetadataSchemaBuilder collectionSchema) {
+			MetadataSchemaBuilder collectionSchema, ModelLayerFactory modelLayerFactory) {
 		MetadataSchemaBuilder schemaBuilder = schemaTypeBuilder.createCustomSchema(getCodeValue(schemaElement));
 		schemaBuilder.setLabels(readLabels(schemaElement));
 		schemaBuilder.setUndeletable(getBooleanFlagValueWithTrueAsDefaultValue(schemaElement, "undeletable"));
 		for (Element metadataElement : schemaElement.getChildren("m")) {
-			parseMetadata(schemaBuilder, metadataElement, collectionSchema);
+			parseMetadata(schemaBuilder, metadataElement, collectionSchema, modelLayerFactory);
 		}
 		List<String> validatorsClassNames = parseValidators(schemaElement, null);
 		for (String validatorsClassName : validatorsClassNames) {
@@ -127,7 +128,7 @@ public class MetadataSchemaXMLReader3 {
 	}
 
 	private void parseMetadata(MetadataSchemaBuilder schemaBuilder, Element metadataElement,
-			MetadataSchemaBuilder collectionSchema) {
+			MetadataSchemaBuilder collectionSchema, ModelLayerFactory modelLayerFactory) {
 		String codeValue = getCodeValue(metadataElement);
 
 		MetadataBuilder metadataBuilder;
@@ -142,7 +143,7 @@ public class MetadataSchemaXMLReader3 {
 		if (metadataBuilder.getInheritance() != null && !metadataBuilder.getCode().contains("_default_")) {
 			parseMetadataWithInheritance(metadataElement, metadataBuilder);
 		} else {
-			parseMetadataWithoutInheritance(metadataElement, metadataBuilder, collectionSchema);
+			parseMetadataWithoutInheritance(metadataElement, metadataBuilder, collectionSchema, modelLayerFactory);
 
 		}
 
@@ -185,7 +186,7 @@ public class MetadataSchemaXMLReader3 {
 	}
 
 	private void parseMetadataWithoutInheritance(Element metadataElement, MetadataBuilder metadataBuilder,
-			MetadataSchemaBuilder collectionSchema) {
+			MetadataSchemaBuilder collectionSchema, ModelLayerFactory modelLayerFactory) {
 		if (!metadataBuilder.isSystemReserved()) {
 			String enabledStringValue = metadataElement.getAttributeValue("enabled");
 			String defaultRequirementStringValue = metadataElement.getAttributeValue("defaultRequirement");
@@ -232,7 +233,7 @@ public class MetadataSchemaXMLReader3 {
 		}
 
 		boolean userDefinedMetadata = metadataBuilder.getLocalCode().startsWith("USR");
-		parseDataEntryElement(metadataBuilder, metadataElement, globalMetadataInCollectionSchema);
+		parseDataEntryElement(metadataBuilder, metadataElement, globalMetadataInCollectionSchema, modelLayerFactory);
 		//if (!isInheriting(metadataElement)) {
 
 		if (metadataBuilder.getType() == null) {
@@ -572,7 +573,7 @@ public class MetadataSchemaXMLReader3 {
 	}
 
 	private void parseDataEntryElement(MetadataBuilder metadataBuilder, Element metadataElement,
-			MetadataBuilder collectionSchemaBuilder) {
+			MetadataBuilder collectionSchemaBuilder, ModelLayerFactory modelLayerFactory) {
 		Element dataEntry = metadataElement.getChild("dataEntry");
 		if (dataEntry != null) {
 			if (dataEntry.getAttributeValue("copied") != null) {
@@ -587,7 +588,15 @@ public class MetadataSchemaXMLReader3 {
 					metadataBuilder.defineDataEntry().asCalculated(
 							(MetadataValueCalculator<?>) utils.toObject(dataEntry, Parametrized.class));
 				} else {
-					metadataBuilder.defineDataEntry().asCalculated(calculator);
+					if (modelLayerFactory.getConfiguration().isExceptionWhenCalculatorOrValidatorNotFound()) {
+						metadataBuilder.defineDataEntry().asCalculated(calculator);
+					} else {
+						try {
+							metadataBuilder.defineDataEntry().asCalculated(calculator);
+						} catch (CannotInstanciateClass e) {
+							metadataBuilder.defineDataEntry().asCalculated()
+						}
+					}
 				}
 
 			} else if (dataEntry.getAttributeValue("fixedSequenceCode") != null) {
@@ -616,14 +625,15 @@ public class MetadataSchemaXMLReader3 {
 	}
 
 	private void parseDefaultSchema(Element root, MetadataSchemaTypeBuilder schemaTypeBuilder,
-			MetadataSchemaTypesBuilder typesBuilder, MetadataSchemaBuilder collectionSchema) {
+			MetadataSchemaTypesBuilder typesBuilder, MetadataSchemaBuilder collectionSchema,
+			ModelLayerFactory modelLayerFactory) {
 		Element defaultSchemaElement = root.getChild("defaultSchema");
 		MetadataSchemaBuilder defaultSchemaBuilder = schemaTypeBuilder.getDefaultSchema();
 
 		defaultSchemaBuilder.setLabels(readLabels(defaultSchemaElement));
 		//	new CommonMetadataBuilder().addCommonMetadataToExistingSchema(defaultSchemaBuilder, typesBuilder);
 		for (Element metadataElement : defaultSchemaElement.getChildren("m")) {
-			parseMetadata(defaultSchemaBuilder, metadataElement, collectionSchema);
+			parseMetadata(defaultSchemaBuilder, metadataElement, collectionSchema, modelLayerFactory);
 		}
 		List<String> validatorsClassNames = parseValidators(defaultSchemaElement, null);
 		for (String validatorsClassName : validatorsClassNames) {
