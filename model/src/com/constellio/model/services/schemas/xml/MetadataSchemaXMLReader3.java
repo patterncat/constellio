@@ -594,7 +594,8 @@ public class MetadataSchemaXMLReader3 {
 						try {
 							metadataBuilder.defineDataEntry().asCalculated(calculator);
 						} catch (CannotInstanciateClass e) {
-							metadataBuilder.defineDataEntry().asCalculated()
+							//metadataBuilder.defineDataEntry().asJexlScript("disabledCalculator:" + calculator);
+							metadataBuilder.defineDataEntry().asManual();
 						}
 					}
 				}

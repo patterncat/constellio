@@ -47,7 +47,10 @@ public class InexistentMetadataCalculatorsAcceptanceTest extends ConstellioTest 
 		AdministrativeUnit unit = rm.getAdministrativeUnit("unitId");
 		assertThat(unit.<String>get("metadataWithInexistentCalculator")).isEqualTo("This is ze title : title");
 
-		getModelLayerFactory().newRecordServices().update(unit.setCode("New code"));
-		assertThat(unit.<String>get("metadataWithInexistentCalculator")).isNull();
+		getModelLayerFactory().newRecordServices().update(unit.setTitle("New title"));
+		//Not updated since it is now a manual field
+		assertThat(unit.<String>get("metadataWithInexistentCalculator")).isEqualTo("This is ze title : title");
+		assertThat(rm.administrativeUnit.schema().getMetadata("metadataWithInexistentCalculator").getCustomAttributes())
+				.contains("disabledCalculator_AnInexistentCalculator");
 	}
 }
