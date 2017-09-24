@@ -9,6 +9,7 @@ import org.junit.Test;
 import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
 import com.constellio.app.modules.rm.wrappers.AdministrativeUnit;
 import com.constellio.model.conf.PropertiesModelLayerConfiguration.InMemoryModelLayerConfiguration;
+import com.constellio.model.entities.schemas.entries.DataEntryType;
 import com.constellio.model.services.schemas.builders.MetadataBuilderRuntimeException;
 import com.constellio.sdk.tests.ConstellioTest;
 import com.constellio.sdk.tests.ModelLayerConfigurationAlteration;
@@ -50,7 +51,7 @@ public class InexistentMetadataCalculatorsAcceptanceTest extends ConstellioTest 
 		getModelLayerFactory().newRecordServices().update(unit.setTitle("New title"));
 		//Not updated since it is now a manual field
 		assertThat(unit.<String>get("metadataWithInexistentCalculator")).isEqualTo("This is ze title : title");
-		assertThat(rm.administrativeUnit.schema().getMetadata("metadataWithInexistentCalculator").getCustomAttributes())
-				.contains("disabledCalculator_AnInexistentCalculator");
+		assertThat(rm.administrativeUnit.schema().getMetadata("metadataWithInexistentCalculator").getDataEntry().getType())
+				.isEqualTo(DataEntryType.MANUAL);
 	}
 }

@@ -5,13 +5,7 @@ import org.junit.Test;
 import com.constellio.app.modules.rm.DemoTestRecords;
 import com.constellio.app.modules.rm.RMConfigs;
 import com.constellio.app.modules.rm.RMTestRecords;
-import com.constellio.app.modules.rm.services.RMSchemasRecordsServices;
-import com.constellio.app.modules.rm.wrappers.AdministrativeUnit;
-import com.constellio.model.entities.records.Transaction;
-import com.constellio.model.entities.schemas.MetadataValueType;
 import com.constellio.model.services.factories.ModelLayerFactory;
-import com.constellio.model.services.schemas.MetadataSchemaTypesAlteration;
-import com.constellio.model.services.schemas.builders.MetadataSchemaTypesBuilder;
 import com.constellio.sdk.tests.annotations.MainTest;
 import com.constellio.sdk.tests.annotations.UiTest;
 
@@ -25,21 +19,6 @@ public class InitialStateSaverAcceptTest extends ConstellioTest {
 
 		givenTransactionLogIsEnabled();
 		givenCollection(zeCollection).withConstellioRMModule();
-
-		getModelLayerFactory().getMetadataSchemasManager().modify(zeCollection, new MetadataSchemaTypesAlteration() {
-			@Override
-			public void alter(MetadataSchemaTypesBuilder types) {
-				types.getSchemaType(AdministrativeUnit.SCHEMA_TYPE).getDefaultSchema().create("metadataWithInexistentCalculator")
-						.setType(MetadataValueType.STRING).defineDataEntry().asCalculated(AnInexistentCalculatortest.class);
-			}
-		});
-
-		Transaction tx = new Transaction();
-
-		RMSchemasRecordsServices rm = new RMSchemasRecordsServices(zeCollection, getAppLayerFactory());
-		AdministrativeUnit unit = tx.add(rm.newAdministrativeUnitWithId("unitId").setCode("code").setTitle("title"));
-
-		getModelLayerFactory().newRecordServices().execute(tx);
 
 		getSaveStateFeature().saveCurrentStateToInitialStatesFolder();
 	}
